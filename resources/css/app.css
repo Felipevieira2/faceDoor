@@ -1,0 +1,99 @@
+@import "tailwindcss";
+@source "../views";
+
+/* Variáveis de cores para todos os temas */
+:root {
+  --color-background: #ffffff;
+  --color-text: #111827;
+  --color-primary: #0284c7;
+  --color-accent: #38bdf8;
+  --color-border: #e5e7eb;
+  --color-card: #ffffff;
+  --color-card-text: #374151;
+  --color-header: #ffffff;
+  --color-header-text: #374151;
+  --color-footer: #ffffff;
+  --color-footer-text: #6b7280;
+}
+
+/* Tema escuro */
+.dark {
+  --color-background: #0f172a;
+  --color-text: #f3f4f6;
+  --color-primary: #38bdf8;
+  --color-accent: #0284c7;
+  --color-border: #334155;
+  --color-card: #1e293b;
+  --color-card-text: #d1d5db;
+  --color-header: #1e293b;
+  --color-header-text: #e5e7eb;
+  --color-footer: #1e293b;
+  --color-footer-text: #9ca3af;
+}
+
+/* Aplicando variáveis de cores aos elementos */
+body {
+  background-color: var(--color-background);
+  color: var(--color-text);
+}
+
+header {
+  background-color: var(--color-header) !important;
+  color: var(--color-header-text) !important;
+}
+
+footer {
+  background-color: var(--color-footer) !important;
+  color: var(--color-footer-text) !important;
+}
+
+.card, .bg-white {
+  background-color: var(--color-card);
+  color: var(--color-card-text);
+}
+
+/* Transição suave ao mudar temas */
+body, header, footer, .card, .bg-white {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Estilos para o botão de alternar tema */
+.theme-toggle {
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  background-color: var(--color-border);
+}
+
+.theme-toggle:hover {
+  transform: scale(1.1);
+}
+
+/* Ícones de tema */
+.theme-icon {
+  width: 24px;
+  height: 24px;
+  fill: var(--color-text);
+}
+
+.moon-icon {
+  display: block;
+}
+
+.sun-icon {
+  display: none;
+}
+
+/* No modo escuro, mostrar sol e esconder lua */
+.dark .moon-icon {
+  display: none;
+}
+
+.dark .sun-icon {
+  display: block;
+}
