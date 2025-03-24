@@ -10,8 +10,7 @@ export default defineConfig({
       input: ['resources/css/app.css', 'resources/js/app.js'],
       refresh: {
         paths: [
-          'resources/views/**/*.blade.php',
-          'routes/**/*.php',
+          'resources/views/**/*.blade.php'
         ],
       },
     }),
@@ -21,7 +20,9 @@ export default defineConfig({
   server: {
     watch: {
       usePolling: false,  // Vamos desativar o polling
-      ignored: ['!**/node_modules/**', '**/vendor/**']
+      ignored: ['!**/node_modules/**', '**/vendor/**', '**/app/**', '**/routes/**', '**/public/**', '**/storage/**'
+        
+      ]
     },
     hmr: {
       overlay: false

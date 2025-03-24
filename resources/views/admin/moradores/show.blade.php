@@ -1,7 +1,7 @@
 <x-layout.admin.app title="Detalhes do Morador">
     <div class="sm:flex sm:items-center sm:justify-between mb-6">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900">Detalhes do Morador</h1>
+            <h1 class="text-2xl font-bold text-gray-400">Detalhes do Morador</h1>
             <p class="mt-1 text-sm text-gray-600">Informações completas do morador</p>
         </div>
         <div class="mt-4 sm:mt-0 flex space-x-3">
@@ -26,31 +26,31 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <x-ui.card>
-            <h2 class="text-lg font-medium text-gray-900 mb-4">Informações Pessoais</h2>
+            <h2 class="text-lg font-medium text-gray-400 mb-4">Informações Pessoais</h2>
             
             <div class="space-y-4">
                 <div>
-                    <p class="text-sm font-medium text-gray-500">Nome Completo</p>
-                    <p class="mt-1 text-base text-gray-900">{{ $morador->nome }}</p>
+                    <p class="text-sm font-medium ">Nome Completo</p>
+                    <p class="mt-1 text-base text-gray-400">{{ $morador->user->nome }}</p>
                 </div>
                 
                 <div>
-                    <p class="text-sm font-medium text-gray-500">CPF</p>
-                    <p class="mt-1 text-base text-gray-900">{{ $morador->cpf }}</p>
+                    <p class="text-sm font-medium ">CPF</p>
+                    <p class="mt-1 text-base text-gray-400">{{ $morador->user->cpf }}</p>
                 </div>
                 
                 <div>
-                    <p class="text-sm font-medium text-gray-500">E-mail</p>
-                    <p class="mt-1 text-base text-gray-900">{{ $morador->email }}</p>
+                    <p class="text-sm font-medium ">E-mail</p>
+                    <p class="mt-1 text-base text-gray-400">{{ $morador->user->email }}</p>
                 </div>
                 
                 <div>
-                    <p class="text-sm font-medium text-gray-500">Telefone</p>
-                    <p class="mt-1 text-base text-gray-900">{{ $morador->telefone }}</p>
+                    <p class="text-sm font-medium ">Telefone</p>
+                    <p class="mt-1 text-base text-gray-400">{{ $morador->user->telefone }}</p>
                 </div>
                 
                 <div>
-                    <p class="text-sm font-medium text-gray-500">Status</p>
+                    <p class="text-sm font-medium ">Status</p>
                     <p class="mt-1">
                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $morador->status === 'ativo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                             {{ $morador->status === 'ativo' ? 'Ativo' : 'Inativo' }}
@@ -61,32 +61,32 @@
         </x-ui.card>
         
         <x-ui.card>
-            <h2 class="text-lg font-medium text-gray-900 mb-4">Informações Residenciais</h2>
+            <h2 class="text-lg font-medium text-gray-400 mb-4">Informações Residenciais</h2>
             
             <div class="space-y-4">
                 <div>
-                    <p class="text-sm font-medium text-gray-500">Condomínio</p>
-                    <p class="mt-1 text-base text-gray-900">{{ $morador->condominio->nome }}</p>
+                    <p class="text-sm font-medium ">Condomínio</p>
+                    <p class="mt-1 text-base text-gray-400">{{ $morador->condominio->nome }}</p>
                 </div>
                 
                 <div>
-                    <p class="text-sm font-medium text-gray-500">Torre</p>
-                    <p class="mt-1 text-base text-gray-900">{{ $morador->torre->nome }}</p>
+                    <p class="text-sm font-medium ">Torre</p>
+                    <p class="mt-1 text-base text-gray-400">{{ $morador->apartamento->torre->nome }}</p>
                 </div>
                 
                 <div>
-                    <p class="text-sm font-medium text-gray-500">Unidade/Apartamento</p>
-                    <p class="mt-1 text-base text-gray-900">{{ $morador->unidade }}</p>
+                    <p class="text-sm font-medium ">Unidade/Apartamento</p>
+                    <p class="mt-1 text-base text-gray-400">{{ $morador->unidade }}</p>
                 </div>
                 
                 <div>
-                    <p class="text-sm font-medium text-gray-500">Data de Cadastro</p>
-                    <p class="mt-1 text-base text-gray-900">{{ $morador->created_at->format('d/m/Y H:i') }}</p>
+                    <p class="text-sm font-medium ">Data de Cadastro</p>
+                    <p class="mt-1 text-base text-gray-400">{{ $morador->created_at->format('d/m/Y H:i') }}</p>
                 </div>
                 
                 <div>
-                    <p class="text-sm font-medium text-gray-500">Última Atualização</p>
-                    <p class="mt-1 text-base text-gray-900">{{ $morador->updated_at->format('d/m/Y H:i') }}</p>
+                    <p class="text-sm font-medium ">Última Atualização</p>
+                    <p class="mt-1 text-base text-gray-400">{{ $morador->updated_at->format('d/m/Y H:i') }}</p>
                 </div>
             </div>
         </x-ui.card>

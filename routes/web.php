@@ -4,9 +4,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\TorreController;
+use App\Http\Controllers\Admin\TorreController;
 use App\Http\Controllers\MoradorController;
-use App\Http\Controllers\VisitanteController;
+use App\Http\Controllers\Admin\VisitanteController as AdminVisitanteController;
 use App\Http\Controllers\CondominioController;
 
 use App\Http\Controllers\DispositivoController;
@@ -76,6 +76,12 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::put('moradores/{morador}', [AdminMoradorController::class, 'update'])->name('moradores.update');
     Route::patch('moradores/{morador}', [AdminMoradorController::class, 'update']);
     Route::delete('moradores/{morador}', [AdminMoradorController::class, 'destroy'])->name('moradores.destroy');
+    
+    // Torres
+    Route::resource('torres', TorreController::class);
+    
+    // Visitantes
+    Route::resource('visitantes', AdminVisitanteController::class);
     
     // Ocorrências
     Route::resource('ocorrencias', OcorrenciaController::class);

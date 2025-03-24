@@ -1,6 +1,4 @@
 <x-layout.admin.app title="Editar Morador" class="overflow-y-auto max-h-[80vh]">
-   
-
     <div class="flex items-center justify-between">
         <div class="mb-2">
             <h1 class="text-2xl font-bold">Editar Morador</h1>
@@ -93,7 +91,7 @@
                 <div class="mb-6">
                     <h2 class="text-lg font-semibold mb-3 border-b pb-2">Informações de Residência</h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <x-forms.select name="condominio_id" label="Condomínio" :value="old('condominio_id', $dados['condominio']['id'])" required
+                        {{-- <x-forms.select name="condominio_id" label="Condomínio" :value="old('condominio_id', $dados['condominio']['id'])" required
                             :error="$errors->first('condominio_id')">
                             <option value="">Selecione um condomínio</option>
                             @foreach ($condominios as $condominio)
@@ -102,7 +100,7 @@
                                     {{ $condominio->nome }}
                                 </option>
                             @endforeach
-                        </x-forms.select>
+                        </x-forms.select> --}}
 
                         <x-forms.select name="torre_id" label="Torre" :value="old('torre_id', $dados['torre']['id'])" required :error="$errors->first('torre_id')">
                             <option value="">Selecione uma torre</option>

@@ -18,7 +18,10 @@ class Checkbox extends Component
         public bool $checked = false,
         public ?string $value = null,
         public string $class = '',
-        public ?string $error = null
+        public ?string $error = null,
+        public ?string $xmodel = null,
+        public ?string $xbindrequired = null,
+        public ?bool $required = false
     ) {
         $this->id = $id ?: $name;
     }

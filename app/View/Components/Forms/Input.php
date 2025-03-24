@@ -21,7 +21,8 @@ class Input extends Component
         public bool $required = false,
         public string $class = '',
         public ?string $error = null,
-        public ?string $autocomplete = null
+        public ?string $autocomplete = null,
+        public ?string $xbindrequired = null
     ) {
         $this->id = $id ?: $name;
     }

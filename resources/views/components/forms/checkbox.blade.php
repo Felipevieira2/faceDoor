@@ -4,6 +4,9 @@
             type="checkbox" 
             name="{{ $name }}" 
             id="{{ $id }}" 
+            @if(isset($xmodel)) x-model="{{ $xmodel }}" @endif
+            @if(isset($xbindrequired)) x-bindrequired="{{ $xbindrequired }}" @endif
+            @if($required) required @endif
             value="{{ $value }}" 
             @if($checked) checked @endif
             class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 {{ $class }}"

@@ -13,6 +13,7 @@ use App\Models\MoradorResponsavel;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
@@ -55,12 +56,13 @@ class MoradorController extends Controller
     public function store(Request $request)
     {
 
-        $validated = $request->validate([
-            'condominio_id' => 'required|exists:condominios,id',
+        $user = Auth::user();
+        
+        $validated = $request->validate([            
             'torre_id' => 'required|exists:torres,id',
             'nome' => 'required|string|max:255',
-            'cpf' => 'required|string|max:14|unique:users,cpf,' . $request->condominio_id, //unique in users cpf+condominio_id
-            'email' => 'nullable|email|unique:users,email,' . $morador->user_id,
+            'cpf' => 'required|string|max:14|unique:users,cpf,' . $user->tenant_id, //unique in users cpf+condominio_id
+            'email' => 'nullable|email|unique:users,email, ' . $user->tenant_id, // add unique tenant_id + id
             'telefone' => 'nullable|string|max:20',
             'apartamento' => 'required|string|max:20',
             'data_nascimento' => 'nullable|date',
@@ -93,8 +95,6 @@ class MoradorController extends Controller
                 'data_nascimento' => $request->data_nascimento, 
                 'foto' => $validated['foto'],
             ]);
-
- 
 
             $user->assignRole('morador');
 
@@ -136,7 +136,10 @@ class MoradorController extends Controller
 
     public function show(Morador $morador)
     {
-        $morador->load('condominio');
+        $morador->load(['user', 'apartamento', 'apartamento.torre', 'apartamento.torre.condominio']);
+        // Preparando dados com valores padrão para campos de relacionamentos
+       
+  
         return view('admin.moradores.show', compact('morador'));
     }
 
@@ -195,7 +198,7 @@ class MoradorController extends Controller
     public function update(Request $request, Morador $morador)
     {        
         $validated = $request->validate([
-            'condominio_id' => 'required|exists:condominios,id',
+           
             'torre_id' => 'required|exists:torres,id',
             'nome' => 'required|string|max:255',
             'cpf' => 'required|string|max:14|unique:users,cpf,' . $morador->user_id,

@@ -68,7 +68,7 @@ class RoleSeeder extends Seeder
         // ]);
 
         // Papel de Morador
-        $moradorRole = Role::create(['name' => 'morador']);
+        $moradorRole = Role::create(['name' => 'morador',]);
         // $moradorRole->givePermissionTo([
         //     'view condominios',
         //     'view torres',
@@ -77,7 +77,7 @@ class RoleSeeder extends Seeder
         // ]);
 
         // Papel de Visitante
-        // $visitanteRole = Role::create(['name' => 'visitante']);
+        $visitanteRole = Role::create(['name' => 'visitante']);
         // $visitanteRole->givePermissionTo([
         //     'view condominios',
         // ]);

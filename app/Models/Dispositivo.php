@@ -26,13 +26,18 @@ class Dispositivo extends Model
      */
     protected $fillable = [
         'nome',
-        'tipo',
         'identificador_unico',
         'condominio_id',
         'torre_id',
         'localizacao',
         'ativo',
+        'fabricante',
+        'username',
+        'password',
+        'ip',
     ];
+
+    protected $appends = ['localizacao_string'];
 
     /**
      * Os atributos que devem ser convertidos.
@@ -57,5 +62,17 @@ class Dispositivo extends Model
     public function torre(): BelongsTo
     {
         return $this->belongsTo(Torre::class);
+    }
+
+
+    public function getLocalizacaoStringAttribute()
+    {
+        $localizacoes = [
+            'entrada_condominio' => 'Entrada do Condomínio',
+            'saida_condominio' => 'Saída do Condomínio',
+            'torre' => 'Torre',
+        ];
+
+        return $localizacoes[$this->localizacao] ?? $this->localizacao;
     }
 }

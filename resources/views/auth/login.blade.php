@@ -4,11 +4,11 @@
 <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-md w-full space-y-8">
         <div>
-            <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            <h2 class="mt-6 text-center text-3xl font-extrabold ">
                 {{ __('Login') }}
             </h2>
-            <p class="mt-2 text-center text-sm text-gray-600">
-                Sistema de Gestão de Acesso de Condomínio
+            <p class="mt-2 text-center text-sm ">
+                {{-- Sistema de Gestão de Acesso de Condomínio --}}
             </p>
         </div>
         
@@ -17,7 +17,7 @@
                 @csrf
 
                 <div>
-                    <label for="email" class="block text-sm font-medium text-gray-700">
+                    <label for="email" class="block text-sm font-medium ">
                         {{ __('Email') }}
                     </label>
                     <div class="mt-1">
@@ -35,7 +35,7 @@
                 </div>
 
                 <div>
-                    <label for="password" class="block text-sm font-medium text-gray-700">
+                    <label for="password" class="block text-sm font-medium ">
                         {{ __('Senha') }}
                     </label>
                     <div class="mt-1">
@@ -55,7 +55,7 @@
                         <input id="remember" name="remember" type="checkbox" 
                             class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                             {{ old('remember') ? 'checked' : '' }}>
-                        <label for="remember" class="ml-2 block text-sm text-gray-900">
+                        <label for="remember" class="ml-2 block text-sm ">
                             {{ __('Lembrar-me') }}
                         </label>
                     </div>
@@ -76,7 +76,7 @@
                 </div>
 
                 <div class="text-center mt-4">
-                    <p class="text-sm text-gray-600">
+                    <p class="text-sm ">
                         Não tem uma conta? 
                         <a href="{{ route('register') }}" class="font-medium text-blue-600 hover:text-blue-500">
                             Registre-se

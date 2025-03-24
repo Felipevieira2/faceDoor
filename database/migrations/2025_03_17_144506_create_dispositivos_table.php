@@ -14,16 +14,14 @@ return new class extends Migration
         Schema::create('dispositivos', function (Blueprint $table) {
             $table->id();
             $table->string('nome');
-            $table->string('tipo'); // 'entrada_condominio', 'saida_condominio', 'torre'
+            $table->string('localizacao'); // 'entrada_condominio', 'saida_condominio', 'torre'
             $table->string('identificador_unico');
-            $table->string('modelo');
-            $table->string('username');
-            $table->string('password');
-            $table->string('ip');
-            $table->string('porta');
+            $table->string('fabricante');
+            $table->string('username')->nullable();
+            $table->string('password')->nullable();
+            $table->string('ip')->nullable();
             $table->foreignId('condominio_id')->constrained('condominios')->onDelete('cascade');
-            $table->foreignId('torre_id')->nullable()->constrained('torres')->onDelete('set null');
-            $table->string('localizacao')->nullable();
+            $table->foreignId('torre_id')->nullable()->constrained('torres')->onDelete('set null');            
             $table->boolean('ativo')->default(true);
             $table->timestamps();
         });

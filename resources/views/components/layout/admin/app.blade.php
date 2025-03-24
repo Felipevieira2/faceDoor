@@ -75,16 +75,20 @@
                                     </button>
 
                                     <div x-show="open" x-cloak @click.outside="open = false"
-                                        class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                                        <div class="flex flex-col gap-2">
+                                        class="absolute right-0 z-10 mt-2 w-42 origin-top-right rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                                        <div class="flex flex-col ">
                                             <a href="{{ route('admin.moradores.index') }}"
-                                                class=" px-2 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 flex items-center justify-center">
-                                                <i class="fas fa-users mr-2"></i>Moradores
+                                                class=" px-2 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 flex items-center ">
+                                                <i class="fas fa-users mr-1"></i>Moradores
+                                            </a>
+                                            <a href="{{ route('admin.visitantes.index') }}"
+                                                class=" px-2 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 flex items-center ">
+                                                <i class="fa-solid fa-user-clock mr-2"></i>Visitantes
                                             </a>
                                             <a href="{{ route('admin.dispositivos.index') }}"
-                                                class=" px-2 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 flex items-center justify-center">
-                                                <i class="fa-solid fa-tablet-screen-button mr-2"></i>Dispositivos
-                                            </a>
+                                            class=" px-2 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 flex items-center ">
+                                            <i class="fa-solid fa-tablet-screen-button mr-2"></i>Dispositivos
+                                        </a>
 
                                         </div>
                                     </div>

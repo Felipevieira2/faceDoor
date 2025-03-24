@@ -21,7 +21,8 @@ class Select extends Component
         public bool $multiple = false,
         public string $class = '',
         public ?string $error = null,
-        public ?string $xmodel = null
+        public ?string $xmodel = null,
+        public ?string $xbindrequired = null
     ) {
         $this->id = $id ?: $name;
     }

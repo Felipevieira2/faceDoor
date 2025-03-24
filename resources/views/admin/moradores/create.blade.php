@@ -1,7 +1,12 @@
 <x-layout.admin.app title="Novo Morador" class="overflow-y-auto max-h-[80vh]">
-    <div class="mb-2">
-        <h1 class="text-2xl font-bold ">Novo Morador</h1>
-        <p class="mt-1 text-sm ">Preencha os dados para cadastrar um novo morador.</p>
+    <div class="flex items-center justify-between">
+        <div class="mb-2"> 
+            <h1 class="text-2xl font-bold ">Novo Morador</h1>
+            <p class="mt-1 text-sm ">Preencha os dados para cadastrar um novo morador.</p>
+        </div>
+        <x-forms.button variant="primary" class="cursor-pointer" onclick="window.location.href='{{ route('admin.moradores.index') }}'">
+            <i class="fas fa-arrow-left mr-2"></i> Voltar
+        </x-forms.button>
     </div>
 
     <x-ui.card class="mt-6 ">
@@ -81,7 +86,7 @@
                 <div class="mb-3">
                     <h2 class="text-lg font-medium  mb-4">Informações de Residência</h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <x-forms.select name="condominio_id" label="Condomínio" :value="old('condominio_id', request('condominio_id'))" required
+                        {{-- <x-forms.select name="condominio_id" label="Condomínio" :value="old('condominio_id', request('condominio_id'))" required
                             :error="$errors->first('condominio_id')">
                             <option value="">Selecione um condomínio</option>
                             @foreach ($condominios as $condominio)
@@ -90,7 +95,7 @@
                                     {{ $condominio->nome }}
                                 </option>
                             @endforeach
-                        </x-forms.select>
+                        </x-forms.select> --}}
 
                         <x-forms.select name="torre_id" label="Torre" :value="old('torre_id')" required :error="$errors->first('torre_id')">
                             <option value="">Selecione uma torre</option>
