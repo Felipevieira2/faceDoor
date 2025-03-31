@@ -38,9 +38,10 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             UserSeeder::class,
             TorreSeeder::class,
-            // MoradorSeeder::class,
+            ApartamentoSeeder::class,
+            MoradorSeeder::class,
             // VisitanteSeeder::class,
-            // DispositivoSeeder::class,
+            DispositivoSeeder::class,
         ]);
     }
 }

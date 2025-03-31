@@ -164,6 +164,7 @@
 
                 // Máscara para CPF: 000.000.000-00
                 const cpfInput = document.getElementById('cpf');
+                
                 if (cpfInput) {
                     IMask(cpfInput, {
                         mask: '000.000.000-00'
@@ -172,6 +173,7 @@
 
                 // Máscara para telefone: (00) 00000-0000
                 const telefoneInput = document.getElementById('telefone');
+
                 if (telefoneInput) {
                     IMask(telefoneInput, {
                         mask: [{

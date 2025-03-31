@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\ControlIdJob;
+use App\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Traits\BelongsToTenant;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Visitante extends Model
 {
@@ -54,6 +56,11 @@ class Visitante extends Model
         'ativo' => 'boolean',
     ];
 
+    public function autorizacoesDispositivos()
+    {
+        return $this->morphMany(AutorizacaoDispositivo::class, 'authorizable');
+    }
+    
     /**
      * Obtém o usuário associado ao visitante.
      */
@@ -124,5 +131,10 @@ class Visitante extends Model
         }
 
         return true;
+    }
+
+    public function controlid_jobs(): MorphMany
+    {
+        return $this->morphMany(ControlIdJob::class, 'user_able');
     }
 }

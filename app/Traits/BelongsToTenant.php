@@ -10,6 +10,7 @@ trait BelongsToTenant
     {
         static::creating(function ($model) {
             if (!$model->tenant_id && session()->has('tenant_id')) {
+
                 $model->tenant_id = session('tenant_id');
             }
         });

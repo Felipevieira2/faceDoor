@@ -3,13 +3,14 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\ControlIdJob;
+use App\Traits\BelongsToTenant;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use App\Traits\BelongsToTenant;
 
 class User extends Authenticatable
 {
@@ -70,4 +71,6 @@ class User extends Authenticatable
     {
         return $this->hasOne(Visitante::class);
     }
+
+   
 }

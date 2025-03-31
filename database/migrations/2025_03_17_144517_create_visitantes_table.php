@@ -16,8 +16,6 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('apartamento_id')->constrained('apartamentos')->onDelete('cascade');
             $table->foreignId('morador_responsavel_id')->constrained('moradores')->onDelete('cascade');
-            $table->dateTime('data_hora_entrada')->nullable();
-            $table->dateTime('data_hora_saida')->nullable();
             $table->date('data_validade_inicio');
             $table->date('data_validade_fim')->nullable();
             $table->boolean('recorrente')->default(false);

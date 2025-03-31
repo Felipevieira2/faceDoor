@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\ControlIdJob;
 use App\Traits\BelongsToTenant;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Morador extends Model
 {
@@ -44,6 +46,19 @@ class Morador extends Model
         'data_fim' => 'date',
         'ativo' => 'boolean',
     ];
+
+    public function autorizacoesDispositivos()
+    {
+        return $this->morphMany(AutorizacaoDispositivo::class, 'authorizable');
+    }
+
+    public function autorizacoeDispositivoByDispositivo(Dispositivo $dispositivo)
+    {
+        
+        return $this->autorizacoesDispositivos()
+        ->where('identificador_dispositivo', $dispositivo->identificador_unico)       
+        ->first();
+    }
 
     /**
      * Obtém o usuário associado ao morador.
@@ -103,4 +118,11 @@ class Morador extends Model
                     })
                     ->exists();
     }
+
+    public function controlid_jobs(): MorphMany
+    {
+        return $this->morphMany(ControlIdJob::class, 'user_able');
+    }
+
+    
 }
