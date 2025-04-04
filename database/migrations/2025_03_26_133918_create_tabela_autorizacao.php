@@ -20,6 +20,7 @@ return new class extends Migration
             $table->date('data_inicio_visitante')->nullable(); // data de inicio da autorizacao
             $table->date('data_fim_visitante')->nullable(); // data de fim da autorizacao
             $table->string('messagem_erro')->nullable(); // mensagem de erro do dispositivo
+            $table->foreignId('dispositivo_id')->constrained('dispositivos')->onDelete('cascade');
 
             $table->unsignedBigInteger('user_id_externo')->nullable(); // Campo do user id do dispositivo
             $table->unsignedBigInteger('match_user_id_externo')->nullable(); // Campo do match user id do dispositivo

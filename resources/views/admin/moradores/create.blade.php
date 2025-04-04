@@ -35,7 +35,7 @@
                         </div>
 
                         <div class="flex-grow">
-                            <label for="foto_morador"
+                            <label for="foto"
                                 class="inline-block px-4 py-2 bg-indigo-600 text-white rounded-md shadow-sm cursor-pointer hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition">
                                 <span class="flex items-center">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none"
@@ -46,10 +46,10 @@
                                     Selecionar Foto
                                 </span>
                             </label>
-                            <input type="file" name="foto_morador" id="foto_morador" accept="image/*" class="hidden">
+                            <input type="file" name="foto" id="foto" accept="image/*" class="hidden">
                             <p class="mt-2 text-xs ">Formatos aceitos: JPG, PNG, GIF. Tamanho máximo: 2MB</p>
                             <p id="foto-nome" class="mt-2 text-sm  hidden"></p>
-                            @error('foto_morador')
+                            @error('foto')
                                 <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
@@ -137,7 +137,7 @@
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 // Prévia da imagem
-                const inputFoto = document.getElementById('foto_morador');
+                const inputFoto = document.getElementById('foto');
                 const previewContainer = document.getElementById('foto-preview');
                 const fotoNome = document.getElementById('foto-nome');
 

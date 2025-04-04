@@ -60,6 +60,19 @@ class Visitante extends Model
     {
         return $this->morphMany(AutorizacaoDispositivo::class, 'authorizable');
     }
+
+    public function autorizacoeDispositivoByDispositivo(Dispositivo $dispositivo)
+    {
+        
+        return $this->autorizacoesDispositivos()
+        ->where('identificador_dispositivo', $dispositivo->identificador_unico)       
+        ->first();
+    }
+
+    public function nome_entidade()
+    {
+        return 'Visitante';
+    }
     
     /**
      * Obtém o usuário associado ao visitante.

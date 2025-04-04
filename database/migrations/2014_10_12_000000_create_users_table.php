@@ -24,7 +24,8 @@ return new class extends Migration
             $table->string('apartamento')->nullable(); //
             $table->string('bloco')->nullable();
             $table->string('torre')->nullable();  
-            $table->date('data_nascimento')->nullable();            
+            $table->date('data_nascimento')->nullable();    
+            $table->boolean('ativo')->default(1);
             $table->rememberToken();
             $table->timestamps();
         });

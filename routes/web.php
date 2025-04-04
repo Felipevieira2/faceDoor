@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\OcorrenciaController;
 use App\Http\Controllers\Admin\MoradorController as AdminMoradorController;
 use App\Http\Controllers\Admin\CondominioController as AdminCondominioController;
 use App\Http\Controllers\Admin\DispositivoController as AdminDispositivoController;
+use App\Http\Controllers\AutorizacaoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -66,6 +67,13 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     
     // Dispositivos
     Route::resource('dispositivos', AdminDispositivoController::class);
+    
+    // Autorizações
+    Route::get('/autorizacoes', [AutorizacaoController::class, 'index'])->name('autorizacoes.index');
+    Route::get('/autorizacoes/create', [AutorizacaoController::class, 'create'])->name('autorizacoes.create');
+    
+    // Controle de Acesso (URL para o menu)
+    Route::get('/controle-acesso', [AutorizacaoController::class, 'index'])->name('controle_acesso');
     
     // Moradores
     Route::get('moradores', [AdminMoradorController::class, 'index'])->name('moradores.index');

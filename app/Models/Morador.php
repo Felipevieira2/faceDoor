@@ -86,6 +86,11 @@ class Morador extends Model
         return $this->belongsTo(Apartamento::class);
     }
 
+    public function nome_entidade()
+    {
+        return 'Morador';
+    }
+
     /**
      * Obtém os apartamentos pelos quais o morador é responsável.
      */

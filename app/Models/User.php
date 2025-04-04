@@ -14,8 +14,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
-    use HasRoles;
+    use HasApiTokens, HasFactory, Notifiable, HasRoles;
     use BelongsToTenant;
 
     /**
@@ -32,6 +31,7 @@ class User extends Authenticatable
         'cpf',
         'foto',
         'data_nascimento',
+        'status'
     ];
 
     /**

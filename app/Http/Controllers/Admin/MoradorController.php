@@ -57,7 +57,7 @@ class MoradorController extends Controller
     {
 
         $user = Auth::user();
-        
+       
         $validated = $request->validate([            
             'torre_id' => 'required|exists:torres,id',
             'nome' => 'required|string|max:255',
@@ -66,15 +66,15 @@ class MoradorController extends Controller
             'telefone' => 'nullable|string|max:20',
             'apartamento' => 'required|string|max:20',
             'data_nascimento' => 'nullable|date',
-            'foto_morador' => 'required|image|max:2048',
+            'foto' => 'required|image|max:2048',
         ]);
-
+        
         try {
 
             DB::beginTransaction();
-            
-            if ($request->hasFile('foto_morador')) {
-                $validated['foto'] = $request->file('foto_morador')->store('moradores', 'public');
+           
+            if ($request->hasFile('foto')) {
+                $validated['foto'] = $request->file('foto')->store('moradores', 'public');
             }
 
             #TODO: CRIAR UM SELECT MULTI COM OS APARTAMENTOS CRIADOS PARA O ADMINISTRADOR CONSEGUIR SELECIONAR NO FORMULARIO DE CADASTRO DO MORADOR
@@ -94,8 +94,9 @@ class MoradorController extends Controller
                 'cpf' => $request->cpf,
                 'data_nascimento' => $request->data_nascimento, 
                 'foto' => $validated['foto'],
+                
             ]);
-
+           
             $user->assignRole('morador');
 
             $morador = Morador::create(
@@ -105,18 +106,25 @@ class MoradorController extends Controller
                     'data_inicio' => now(),
                     'data_fim' => null,
                     'ativo' => true,
-
                 ]
             );
 
             if ($request->is_responsavel) {
-                MoradorResponsavel::create([
-                    'morador_id' => $morador->id,
-                    'apartamento_id' => $apartamento->id,
-                    'data_inicio' => now(),
-                    'data_fim' => null,
-                    'ativo' => true,
-                ]);
+                MoradorResponsavel::updateOrCreate(
+                    [
+                        'morador_id' => $morador->id,
+                        'apartamento_id' => $apartamento->id
+                    ],
+                    [
+                        'data_inicio' => now(),
+                        'data_fim' => null,
+                        'ativo' => true,
+                    ]
+                );
+            } else {
+                MoradorResponsavel::where('morador_id', $morador->id)
+                    ->where('apartamento_id', $apartamento->id)
+                    ->delete();
             }
 
             DB::commit();
@@ -126,6 +134,7 @@ class MoradorController extends Controller
             //throw $th;
             DB::rollBack();
             Log::error('Erro ao cadastrar morador: ' . $th->getMessage() . ' line: ' . $th->getLine());
+         
             return redirect()->back()->withInput($request->all())
                 ->with('error', 'Erro ao cadastrar morador: ');
         }
@@ -197,28 +206,31 @@ class MoradorController extends Controller
 
     public function update(Request $request, Morador $morador)
     {        
-        $validated = $request->validate([
-           
+        $validated = $request->validate([           
             'torre_id' => 'required|exists:torres,id',
             'nome' => 'required|string|max:255',
             'cpf' => 'required|string|max:14|unique:users,cpf,' . $morador->user_id,
             'email' => 'nullable|email|unique:users,email,' . $morador->user_id,
             'telefone' => 'nullable|string|max:20',
             'apartamento' => 'required|string|max:20',           
-            'data_nascimento' => 'nullable|date',          
-            'status' => 'required|string|in:ativo,inativo,bloqueado',
-            'foto_morador' => 'nullable|image|max:2048',
-        ]);
-
+            'data_nascimento' => 'nullable|date',                    
+            'foto' => 'image|max:2048',
+            
+        ]);               
+        
         try {
             DB::beginTransaction();
-
-            if ($request->hasFile('foto_morador')) {
+          
+            if ($request->hasFile('foto')) {              
                 // Remover foto antiga
                 if ($morador->user->foto) {
-                    Storage::disk('public')->delete($morador->foto);
+                    /// how check if the file exists
+                    if (Storage::disk('public')->exists($morador->user->foto)) {
+                        Storage::disk('public')->delete($morador->user->foto);
+                    }
                 }
-                $validated['foto'] = $request->file('foto_morador')->store('moradores', 'public');
+
+                $validated['foto'] = $request->file('foto')->store('moradores', 'public');                  
             }
     
             // Criar ou atualizar apartamento
@@ -230,6 +242,20 @@ class MoradorController extends Controller
                 ]
             );
 
+            $antigoApartamento = $morador->apartamento_id;
+
+            if($apartamento->id != $antigoApartamento) {
+                $morador = Morador::where('apartamento_id', $antigoApartamento)
+                    ->first();
+
+                if($morador == null) { //se não houver moradores no apartamento antigo, deletar o responsavel
+                    Apartamento::where('apartamento_id', $antigoApartamento)->delete();
+
+                    #TODO SE MUDAR A TORRE PRECISA REMOVER AUTORIZAÇÃO DA TORRE ANTIGA
+
+                }
+            }
+
             // Atualizar usuário
             $morador->user->update([
                 'name' => $request->nome,
@@ -238,21 +264,33 @@ class MoradorController extends Controller
                 'cpf' => $request->cpf,
                 'data_nascimento' => $request->data_nascimento,
                 'foto' => $validated['foto'] ?? $morador->user->foto, // Manter foto antiga se não houver nova
-                'ativo' => $request->status == 'ativo' ? true : false,
+                'ativo' => $request->status == 'ativo' ? 1 : 0,
             ]);
 
             // Atualizar morador
             $morador->update([
-                'apartamento_id' => $apartamento->id,            
-                'status' => $request->status,                      
-                // ... outros campos que precisam ser atualizados ...
+                'apartamento_id' => $apartamento->id, 
+                'ativo' => $request->status == 'ativo' ? 1 : 0,                                  
+                
             ]);
 
-            // Registrar atividade
-            // Atividade::create([
-            //     'usuario_id' => auth()->id(),
-            //     'descricao' => 'Atualizou o morador: ' . $morador->nome,
-            // ]);
+            if ($request->is_responsavel) {
+                MoradorResponsavel::updateOrCreate(
+                    [
+                        'morador_id' => $morador->id,
+                        'apartamento_id' => $apartamento->id
+                    ],
+                    [
+                        'data_inicio' => now(),
+                        'data_fim' => null,
+                        'ativo' => true,
+                    ]
+                );
+            } else {
+                MoradorResponsavel::where('morador_id', $morador->id)
+                    ->where('apartamento_id', $apartamento->id)
+                    ->delete();
+            }
 
             DB::commit();
             return redirect()->route('admin.moradores.index')

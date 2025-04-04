@@ -20,12 +20,18 @@ export default defineConfig({
   server: {
     watch: {
       usePolling: false,  // Vamos desativar o polling
-      ignored: ['!**/node_modules/**', '**/vendor/**', '**/app/**', '**/routes/**', '**/public/**', '**/storage/**'
+      ignored: [
+        '!**/node_modules/**', '**/vendor/**', '**/app/**', '**/routes/**', '**/public/**', '**/storage/**'
         
       ]
     },
     hmr: {
       overlay: false
+    }
+  },
+  resolve: {
+    alias: {
+      'vue': 'vue/dist/vue.esm-bundler.js'
     }
   },
 });

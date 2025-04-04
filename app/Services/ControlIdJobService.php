@@ -23,12 +23,11 @@ class ControlIdJobService
     {
 
         $job = $this->jobRepository->getPendingJobByDeviceId($deviceId);
-       
+      
         if (!$job) {
             Log::info('Nenhum job pendente para esse dispositivo');
-
             
-            return response()->json([], 500);
+            return response()->json([], 200);
         }
 
         if (!($job instanceof ControlIdJob)) {
@@ -40,7 +39,7 @@ class ControlIdJobService
         $job->status = 2; 
         $job->tentativas++;
         $job->save();
-
+       
         // Log::info("Processando job de acesso id: {$job->id}");
         $handler = ControlIdPushHandlerFactory::create($job->endpoint);
        
@@ -64,7 +63,6 @@ class ControlIdJobService
             Log::info('Nenhum job para o uuid: ' . $request->uuid . 'foi encontrado');
             return response()->json([], 500);
         }
-
 
         $handler = ControlIdResultHandlerFactory::create($job->endpoint);
 

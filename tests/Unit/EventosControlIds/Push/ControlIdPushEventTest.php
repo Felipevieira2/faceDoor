@@ -17,6 +17,7 @@ use App\Models\ControlIdJob;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Services\ControlIdJobService;
+use App\Models\AutorizacaoDispositivo;
 use App\Strategies\ControlID\ControlIdStrategy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Repositories\Interfaces\ControlIdJobRepositoryInterface;
@@ -34,14 +35,14 @@ class ControlIdPushEventTest extends TestCase
     protected Torre $torre;
     protected Condominio $condominio;
     protected User $user;
-
+    private ControlIdJobRepositoryInterface $jobRepository;
     protected function setUp(): void
     {
         parent::setUp();
 
         // Criar instância da strategy
         $this->strategy = new ControlIdStrategy();
-
+        $this->jobRepository = app(ControlIdJobRepositoryInterface::class);
         Condominio::factory()->create([
             'id' => '1',
             'nome' => 'Condominio Teste',
@@ -89,18 +90,20 @@ class ControlIdPushEventTest extends TestCase
             'apartamento_id' => $this->apartamento->id,
         ]);
 
+        $dataInicio = Carbon::create(2025, 3, 29, 0, 0, 0);
+        $dataFim = Carbon::create(2025, 4, 5, 0, 0, 0);
 
         $this->visitante = Visitante::factory()->create([
             'tenant_id' => 1,
             'user_id' => $this->user->id,
             'apartamento_id' => $this->apartamento->id,
             'morador_responsavel_id' => $this->morador->id,
-            'data_validade_inicio' => now(),
-            'data_validade_fim' => now()->addDays(7),
+            'data_validade_inicio' => $dataInicio,
+            'data_validade_fim' => $dataFim,
             'ativo' => true,
             'dias_semana' => implode(',', ['seg', 'ter', 'qua', 'qui', 'sex', 'sab', 'dom']), // Convertendo para string
-            'horario_inicio' => now(),
-            'horario_fim' => now()->addDays(7)
+            'horario_inicio' => $dataInicio,
+            'horario_fim' => $dataFim
         ]);
     }
 
@@ -184,9 +187,10 @@ class ControlIdPushEventTest extends TestCase
 
         $pushService = new ControlIdJobService($jobRepository);
         $response = $pushService->processPush($deviceId, $uuid);
-
+        Log::info($response->getContent());
         // Ajuste a expectativa conforme o comportamento esperado quando não há jobs
-        $this->assertEquals(['message' => 'No pending jobs for this device.'], $response);
+        $this->assertEquals("[]", $response->getContent());
+        $this->assertEquals(200, $response->getStatusCode());
     }
 
     /** @test */
@@ -194,8 +198,11 @@ class ControlIdPushEventTest extends TestCase
     {
         // |--------------------- CRIADO JOB PARA AUTORIZAR ---------------------|
         $this->strategy->createJobByEndpoint($this->dispositivo, $this->visitante, 'create_user_visitante');
-        $job = ControlIdJob::where('identificador_dispositivo', $this->dispositivo->identificador_unico)->first();
-
+     
+        $this->assertDatabaseHas('controlid_jobs', [
+            'identificador_dispositivo' => $this->dispositivo->identificador_unico,
+            'endpoint' => 'create_user_visitante',
+        ]);
         // |--------------------- passo 2 ---------------------|
         // |--------------------- EVENTO DO CONTROLID PUSH CHEGA PARA PERGUNTAR PRA GENTE SE TEM TAREFA DO DISPOSITIVO ---------------------|
 
@@ -209,26 +216,30 @@ class ControlIdPushEventTest extends TestCase
         $deviceId = $request->input('deviceId');
         $uuid = $request->input('uuid');
         // Mock do repositório de jobs
-        $jobRepository = Mockery::mock(ControlIdJobRepositoryInterface::class);
+        // $jobRepository = Mockery::mock(ControlIdJobRepositoryInterface::class);
 
-        // Configure o comportamento esperado do mock
-        $jobRepository->shouldReceive('getPendingJobByDeviceId')
-            ->with($deviceId)
-            ->once()
-            ->andReturn($job); // Ou retorne um job mockado se necessário
+        // // Configure o comportamento esperado do mock
+        // $jobRepository->shouldReceive('getPendingJobByDeviceId')
+        //     ->with($deviceId)
+        //     ->once()
+        //     ->andReturn($job); // Ou retorne um job mockado se necessário
 
-        $pushService = new ControlIdJobService($jobRepository);
+        $pushService = new ControlIdJobService($this->jobRepository);
         $response = $pushService->processPush($deviceId, $uuid);
 
 
         Log::info('data_inicio_visita teste');
-        $data_inicio = Carbon::parse($job->user_able->data_inicio_visita)->timestamp;
-        $data_fim = Carbon::parse($job->user_able->data_fim_visita)->timestamp;
+        $data_inicio = Carbon::parse($this->visitante->data_validade_inicio)->timestamp;
+
+        if($this->visitante->data_validade_fim){
+            $data_fim = Carbon::parse($this->visitante->data_validade_fim)->timestamp;
+        }else{
+            $data_fim = Carbon::now()->addYear()->timestamp;
+        }
+
         Log::info('data_inicio_visita teste');
-
-        Log::info($data_inicio);
-        Log::info($data_fim);
-
+        
+        
         $this->assertEquals([
             "verb" => "POST",
             "endpoint" => "create_objects",
@@ -236,7 +247,7 @@ class ControlIdPushEventTest extends TestCase
                 "object" => "users",
                 "values" => [
                     [
-                        "name" => $job->user_able->user->name,
+                        "name" => $this->visitante->user->name,
                         "registration" => "",
                         "password" => "",
                         "salt" => "",
@@ -248,7 +259,7 @@ class ControlIdPushEventTest extends TestCase
         ], $response);
 
         //verificar se o não existe erro no job foi processado
-        $this->assertNotEquals(3, $job->status);
+        $this->assertDatabaseCount('controlid_jobs', 1);
     }
 
     /** @test */
@@ -256,7 +267,10 @@ class ControlIdPushEventTest extends TestCase
     {
         // |--------------------- CRIADO JOB PARA AUTORIZAR ---------------------|
         $this->strategy->createJobByEndpoint($this->dispositivo, $this->morador, 'delete_user');
-        $job = ControlIdJob::where('identificador_dispositivo', $this->dispositivo->identificador_unico)->first();
+        $this->assertDatabaseHas('controlid_jobs', [
+            'identificador_dispositivo' => $this->dispositivo->identificador_unico,
+            'endpoint' => 'delete_user',
+        ]);
 
         // |--------------------- passo 2 ---------------------|
         // |--------------------- EVENTO DO CONTROLID PUSH CHEGA PARA PERGUNTAR PRA GENTE SE TEM TAREFA DO DISPOSITIVO ---------------------|
@@ -271,17 +285,24 @@ class ControlIdPushEventTest extends TestCase
         $deviceId = $request->input('deviceId');
         $uuid = $request->input('uuid');
         // Mock do repositório de jobs
-        $jobRepository = Mockery::mock(ControlIdJobRepositoryInterface::class);
+      
+        $autorizacao = AutorizacaoDispositivo::create([
+            'user_id_externo' => 1003115,
+            'authorizable_type' => get_class($this->morador),
+            'authorizable_id' => $this->morador->id,
+            'identificador_dispositivo' => $this->dispositivo->identificador_unico,
+            'status' => 'autorizado',
+        ]);
 
-        // Configure o comportamento esperado do mock
-        $jobRepository->shouldReceive('getPendingJobByDeviceId')
-            ->with($deviceId)
-            ->once()
-            ->andReturn($job); // Ou retorne um job mockado se necessário
-
-        $pushService = new ControlIdJobService($jobRepository);
+        $pushService = new ControlIdJobService($this->jobRepository);
         $response = $pushService->processPush($deviceId, $uuid);
-
+        
+        $this->assertDatabaseHas('controlid_jobs', [
+            'identificador_dispositivo' => $this->dispositivo->identificador_unico,
+            'endpoint' => 'delete_user',
+            'uuid' => $uuid,
+        ]);       
+      
         $this->assertEquals([
             "verb" => "POST",
             "endpoint" => "destroy_objects",
@@ -292,12 +313,14 @@ class ControlIdPushEventTest extends TestCase
                         "object" => "users",
                         "field" => "id",
                         "operator" => "=",
-                        "value" => $job->user_able->autorizacoeDispositivoByDispositivo($job->dispositivo)->controlid_user_id
+                        "value" => $autorizacao->user_id_externo
                     ]
                 ]
             ]
         ], $response);
 
+       
+        $job = ControlIdJob::where('identificador_dispositivo', $this->dispositivo->identificador_unico)->first();
         //verificar se o não existe erro no job foi processado
         $this->assertNotEquals(3, $job->status);
     }

@@ -12,7 +12,7 @@ use App\Strategies\ControlID\PushEvent\Interfaces\ControlIdJobsHandlerStrategyIn
 class CreateUserVisitanteHandler implements ControlIdJobsHandlerStrategyInterface
 {
     /**
-     * Manipula jobs relacionados a controle de acesso
+     * Manipula jobs relacionados ao cadastro de visitantes no ControlID
      *
      * @param ControlIdJob $job
      * @return array
@@ -20,16 +20,28 @@ class CreateUserVisitanteHandler implements ControlIdJobsHandlerStrategyInterfac
     public function handle(ControlIdJob $job): array
     {
         Log::info("PUSH - handle create_user_visitante: {$job->id}");
-        // como obter o nome do usuário pelo vinculo morph da tabel job.morador.user-name
-               
-        // Lógica específica para manipulação de acesso
+        
         try {
-            Log::info('data_inicio_visita create_user_visitantehandler');
-            $data_inicio = Carbon::parse($job->user_able->data_inicio_visita)->timestamp;
-            $data_fim = Carbon::parse($job->user_able->data_fim_visita)->timestamp;
-            Log::info('data_fim_visita create_user_visitantehandler');
+            // Obtém as datas de início e fim de validade do visitante
+            $data_inicio = Carbon::parse($job->user_able->data_validade_inicio)->timestamp;
+            Log::info("Data início para visitante {$job->user_able->id}: " . $job->user_able->data_validade_inicio);
             
-            $response =    [
+            // Data fim pode ser nula (visita por tempo indeterminado)
+            $data_fim = null;
+            if ($job->user_able->data_validade_fim) {
+                
+                $data_fim = Carbon::parse($job->user_able->data_validade_fim)->timestamp;
+
+                
+                Log::info("Data fim para visitante {$job->user_able->id}: " . $job->user_able->data_validade_fim);
+            } else {
+                // Se não houver data de fim, define para um ano no futuro como padrão
+                $data_fim = Carbon::now()->addYear()->timestamp;
+                Log::info("Data fim não definida, usando um ano no futuro: " . Carbon::now()->addYear());
+            }
+            
+            // Cria o payload para envio ao ControlID
+            $response = [
                 'verb' => 'POST',
                 'endpoint' => 'create_objects',
                 'body' => [
@@ -45,13 +57,17 @@ class CreateUserVisitanteHandler implements ControlIdJobsHandlerStrategyInterfac
                         ]
                     ]
                 ]
-            ];                       
-  
+            ];
+            
+            // Atualiza o status do job para processando
+            $job->status = 2; // Processando
+            $job->save();
+            
             return $response;
         } catch (\Exception $e) {
-            Log::error("Erro ao processar job de acesso: {$e->getMessage()}");
+            Log::error("Erro ao processar job de cadastro de visitante: {$e->getMessage()}");
             
-            
+            $job->status = 3; // Erro
             $job->log = $e->getMessage();
             $job->save();
             

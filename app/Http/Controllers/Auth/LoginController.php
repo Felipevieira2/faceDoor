@@ -30,9 +30,10 @@ class LoginController extends Controller
             'password' => ['required'],
         ]);
 
-        if (Auth::attempt($credentials)) {
+        if (Auth::attempt($credentials, $request->filled('remember'))) {
             $request->session()->regenerate();
-
+            
+            // Para requisições web, redireciona normalmente
             return redirect()->intended('/');
         }
 
@@ -53,5 +54,36 @@ class LoginController extends Controller
         $request->session()->regenerateToken();
 
         return redirect('/');
+    }
+
+    /**
+     * API para login via JSON
+     */
+    public function apiLogin(Request $request)
+    {
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required'],
+        ]);
+
+        if (!Auth::attempt($credentials)) {
+            return response()->json([
+                'message' => 'Credenciais inválidas'
+            ], 401);
+        }
+
+        $user = User::where('email', $request->email)->first();
+        
+        // Revoga todos os tokens existentes (opcional)
+        // $user->tokens()->delete();
+        
+        // Cria um novo token
+        $token = $user->createToken('auth-token')->plainTextToken;
+        
+        return response()->json([
+            'token' => $token,
+            'user' => $user,
+            'message' => 'Login realizado com sucesso'
+        ]);
     }
 } 

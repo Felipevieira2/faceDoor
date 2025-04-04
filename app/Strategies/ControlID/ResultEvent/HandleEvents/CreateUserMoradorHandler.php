@@ -43,7 +43,7 @@ class CreateUserMoradorHandler implements ControlIdJobsHandlerStrategyInterface
             }else{
 
                 if($autorizacao->status == 'autorizado'){
-                    \Log::info("autorizacao: {$autorizacao->id} create_user_morador");
+                    Log::info("autorizacao: {$autorizacao->id} create_user_morador");
                     $job->status = 1;
                     $job->response = "Já existe uma autorização para esse dispositivo";
                     $job->save();

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('apartamento_id')->constrained('apartamentos')->onDelete('cascade');
             $table->date('data_inicio');
             $table->date('data_fim')->nullable();
-            $table->boolean('ativo')->default(true);
+            $table->boolean('ativo')->default(1);
             $table->timestamps();
         });
     }

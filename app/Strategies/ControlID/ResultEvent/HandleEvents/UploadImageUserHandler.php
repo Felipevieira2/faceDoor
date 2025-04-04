@@ -29,7 +29,7 @@ class UploadImageUserHandler implements ControlIdJobsHandlerStrategyInterface
         try {            
             // Processar a resposta do ControlID
          
-            // // Atualizar o status da autorização, se necessário
+            // Atualizar o status da autorização, se necessário
             $autorizacao = $job->user_able->autorizacoeDispositivoByDispositivo($job->dispositivo);
                 
             // Log::info("autorizacao: {$autorizacao} upload_image_user");
@@ -38,7 +38,7 @@ class UploadImageUserHandler implements ControlIdJobsHandlerStrategyInterface
             //'response' => '{"scores":{"bounds_width":118,"horizontal_center_offset":-160,"vertical_center_offset":32,"center_pose_quality":915,"sharpness_quality":750},"success":false,"errors":[{"code":3,"message":"Face exists","info":{"match_user_id":1003088,"match_confidence":1048}}]}',
             $response = json_decode($request->response, true);
 
-
+            Log::info("response: " . json_encode($response));
           
             if ($response['success']) {
                 $autorizacao->status = 'autorizado'; 
@@ -66,7 +66,7 @@ class UploadImageUserHandler implements ControlIdJobsHandlerStrategyInterface
 
            
         } catch (\Exception $e) {
-            Log::error("Erro ao processar jobId: {$job->id} message: {$e->getMessage()}  upload_image_user");
+            Log::error("Erro ao processar jobId: {$job->id} message: {$e->getMessage()} line: {$e->getLine()} file: {$e->getFile()}  upload_image_user");
             
             $job->status = 3;
             $job->log = $e->getMessage();

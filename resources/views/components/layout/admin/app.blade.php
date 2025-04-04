@@ -61,6 +61,11 @@
                                         </a>
                                     </div>
                                 </div> --}}
+                                  {{-- adicionar controle de acesso --}}
+                                  <a href="{{ route('admin.controle_acesso') }}"
+                                  class="{{ request()->routeIs('admin.controle_acesso') ? 'border-primary-500 text-gray-900 dark:text-white' : 'border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-200' }} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition duration-200">
+                                      Controle de Acesso
+                                  </a>      
                                 <div class="relative cursor-pointer" x-data="{ open: false }">
                                     <button @click="open = !open" type="button"
                                         class="cursor-pointer flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700">
@@ -75,26 +80,31 @@
                                     </button>
 
                                     <div x-show="open" x-cloak @click.outside="open = false"
-                                        class="absolute right-0 z-10 mt-2 w-42 origin-top-right rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                                        <div class="flex flex-col ">
+                                        class="absolute left-0 top-full z-10 mt-2 w-48 origin-top-left rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                                        <div class="flex flex-col">
                                             <a href="{{ route('admin.moradores.index') }}"
-                                                class=" px-2 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 flex items-center ">
-                                                <i class="fas fa-users mr-1"></i>Moradores
+                                                class="px-2 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 flex items-center">
+                                                <i class="fas fa-users w-6"></i>Moradores
                                             </a>
                                             <a href="{{ route('admin.visitantes.index') }}"
-                                                class=" px-2 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 flex items-center ">
-                                                <i class="fa-solid fa-user-clock mr-2"></i>Visitantes
+                                                class="px-2 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 flex items-center">
+                                                <i class="fa-solid fa-user-clock w-6"></i>Visitantes
                                             </a>
                                             <a href="{{ route('admin.dispositivos.index') }}"
-                                            class=" px-2 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 flex items-center ">
-                                            <i class="fa-solid fa-tablet-screen-button mr-2"></i>Dispositivos
-                                        </a>
-
+                                                class="px-2 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 flex items-center">
+                                                <i class="fa-solid fa-tablet-screen-button w-6"></i>Dispositivos
+                                            </a>
+                                            <a href="{{ route('admin.controle_acesso') }}"
+                                                class="px-2 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 flex items-center">
+                                                <i class="fa-solid fa-key w-6"></i>Controle de Acesso
+                                            </a>
                                         </div>
                                     </div>
                                 </div>
 
+                              
                             @endauth
+
                         </div>
                     </div>
                     <div class="hidden sm:ml-6 sm:flex sm:items-center space-x-4">
@@ -190,6 +200,13 @@
                             block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition duration-200">
                             Dispositivos
                         </a>
+                        <a href="{{ route('admin.controle_acesso') }}"
+                            class="{{ request()->routeIs('admin.controle_acesso')
+                                ? 'bg-primary-50 dark:bg-primary-900 border-primary-500 text-primary-700 dark:text-primary-300'
+                                : 'border-transparent text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-200' }} 
+                            block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition duration-200">
+                            Controle de Acesso
+                        </a>
                     @endauth
                 </div>
                 <div class="pt-4 pb-3 border-t border-gray-200 dark:border-gray-700">
@@ -283,6 +300,11 @@
             </div>
         </footer>
     @endif
+    
+    <div id="notification-container">
+        <alert-container></alert-container>
+    </div>
+    
     @stack('scripts')
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/solid.min.js" crossorigin="anonymous"
         referrerpolicy="no-referrer"></script>

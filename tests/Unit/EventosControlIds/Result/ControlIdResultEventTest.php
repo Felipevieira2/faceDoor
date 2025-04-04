@@ -38,9 +38,6 @@ class ControlIdResultEventTest extends TestCase
     protected User $user;
     private ControlIdJobRepositoryInterface $jobRepository;
 
-   
-
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -117,7 +114,7 @@ class ControlIdResultEventTest extends TestCase
         // |--------------------- CRIADO JOB PARA AUTORIZAR ---------------------|
         $this->strategy->createJobByEndpoint($this->dispositivo, $this->morador, 'create_user_morador');
         
-         // Verificar se foi criado um registro na tabela de autorizações
+        // Verificar se foi criado um registro na tabela de autorizações
         $this->assertDatabaseHas('controlid_jobs', [ 
             'identificador_dispositivo' => $this->dispositivo->identificador_unico,
             'status' => 0,
@@ -128,8 +125,6 @@ class ControlIdResultEventTest extends TestCase
         // |--------------------- passo 2 ---------------------|
         // |--------------------- EVENTO DO CONTROLID PUSH CHEGA PARA PERGUNTAR PRA GENTE SE TEM TAREFA DO DISPOSITIVO ---------------------|
       
-
-
         $request = new Request();
         $uuid = Str::uuid()->toString();
         $request->merge([
@@ -304,10 +299,10 @@ class ControlIdResultEventTest extends TestCase
         // REQUEST RESULT DO CONTROLID COM O RESULTADO DO PUSH
         $request = new Request();
         $request->merge([
-            'response' => '{"ids":[1003115]}',
+            'response' => '{"scores":{"bounds_width":118,"horizontal_center_offset":-160,"vertical_center_offset":32,"center_pose_quality":915,"sharpness_quality":750},"success":true,"errors":[{"code":3,"message":"Face exists","info":{"match_user_id":1003088,"match_confidence":1048}}]}',
             'deviceId' => $this->dispositivo->identificador_unico,
             'uuid' => $uuid,
-            'endpoint' => 'user_set_image',
+            'endpoint' => 'upload_image_user',
         ]);
 
         $controlidService = new ControlIdJobService($this->jobRepository);
@@ -331,7 +326,230 @@ class ControlIdResultEventTest extends TestCase
             'identificador_dispositivo' => $this->dispositivo->identificador_unico,
             'status' => 'autorizado',
         ]);
+
+        
     }
 
+
+    /** @test */
+    public function case_2_result_event_tem_job_create_user_visitante()
+    {
+        // |--------------------- CRIADO JOB PARA AUTORIZAR ---------------------|
+        $this->strategy->createJobByEndpoint($this->dispositivo, $this->visitante, 'create_user_visitante');
+        
+        // Verificar se foi criado um registro na tabela de autorizações
+        $this->assertDatabaseHas('controlid_jobs', [ 
+            'identificador_dispositivo' => $this->dispositivo->identificador_unico,
+            'status' => 0,
+            'endpoint' => 'create_user_visitante',
+        ]);
+
+  
+        // |--------------------- passo 2 ---------------------|
+        // |--------------------- EVENTO DO CONTROLID PUSH CHEGA PARA PERGUNTAR PRA GENTE SE TEM TAREFA DO DISPOSITIVO ---------------------|
+      
+        $request = new Request();
+        $uuid = Str::uuid()->toString();
+        $request->merge([
+            'deviceId' => $this->dispositivo->identificador_unico,
+            'uuid' => $uuid,
+            'is_test' => false,
+        ]);
+
+        $deviceId = $request->input('deviceId');
+        $uuid = $request->input('uuid');
+
+       
+        $pushService = new ControlIdJobService($this->jobRepository);
+        $response = $pushService->processPush($deviceId, $uuid);
+
+        $this->assertEquals([
+            "verb" => "POST",
+            "endpoint" => "create_objects",
+            "body" => [
+                "object" => "users",
+                "values" => [
+                    0 => [
+                        "name" => $this->visitante->user->name,
+                        "registration" => "",
+                        "password" => "",
+                        "salt" => "",
+                        'begin_time' => $this->visitante->data_validade_inicio->timestamp,
+                        'end_time' => $this->visitante->data_validade_fim->timestamp
+                    ]
+                ]
+            ]
+        ], $response);
+
+        // REQUEST RESULT DO CONTROLID
+        $request = new Request();
+        $request->merge([
+            'response' => '{"ids":[1003115]}',
+            'deviceId' => '4408801109214683',
+            'uuid' => $uuid,
+            'endpoint' => 'create_objects',
+        ]);
     
+        $controlidService = new ControlIdJobService($this->jobRepository);
+
+        $response = $controlidService->processResult($request);        
+ 
+        $this->assertEquals(200, $response->getStatusCode());
+
+        // Verificar se o job foi processado com sucesso
+        $this->assertDatabaseHas('controlid_jobs', [
+            'identificador_dispositivo' => $this->dispositivo->identificador_unico,
+            'status' => 1,
+            'user_able_type' => get_class($this->visitante),
+            'user_able_id' => $this->visitante->id,
+            'uuid' => $uuid,
+            'endpoint' => 'create_user_visitante',
+        ]);
+
+        //tem que ter uma autorizacao_dispositivo com o user_id_externo 1003115
+        $this->assertDatabaseHas('autorizacao_dispositivos', [
+            'user_id_externo' => 1003115,
+            'authorizable_type' => get_class($this->visitante),
+            'authorizable_id' => $this->visitante->id,
+            'identificador_dispositivo' => $this->dispositivo->identificador_unico,
+            'status' => 'processando',
+        ]);
+
+        // Verificar se o job de adicionar o grupo ao visitante foi criado
+        $this->assertDatabaseHas('controlid_jobs', [
+            'identificador_dispositivo' => $this->dispositivo->identificador_unico,
+            'user_able_type' => get_class($this->visitante),
+            'user_able_id' => $this->visitante->id,
+            'endpoint' => 'add_group_user',           
+            'status' => 0,
+        ]);
+
+        // criar mais um novo request push para adicionar o grupo ao visitante
+        $request = new Request();
+        $uuid = Str::uuid()->toString();
+        $request->merge([
+            'deviceId' => $this->dispositivo->identificador_unico,
+            'uuid' => $uuid,
+            'is_test' => false,
+        ]);
+
+        $deviceId = $request->input('deviceId');
+        $uuid = $request->input('uuid');
+
+        $pushService = new ControlIdJobService($this->jobRepository);
+        $response = $pushService->processPush($deviceId, $uuid);
+
+        $this->assertEquals([
+            "verb" => "POST",
+            "endpoint" => "create_objects",
+            "body" => [
+                "object" => "user_groups",
+                "fields" => ["user_id", "group_id"],
+                "values" => [
+                    [
+                        "user_id" => (int) $this->visitante->autorizacoesDispositivos->first()->user_id_externo,
+                        "group_id" => 1,
+                    ]
+                ]
+            ]
+        ], $response);
+        
+        
+        // REQUEST RESULT DO CONTROLID COM O RESULTADO DO PUSH
+        $request = new Request();
+        $request->merge([
+            'response' => '{"ids":[1003115]}',
+            'deviceId' => $this->dispositivo->identificador_unico,
+            'uuid' => $uuid,
+            'endpoint' => 'add_group_user',
+        ]);
+
+        $controlidService = new ControlIdJobService($this->jobRepository);
+        $response = $controlidService->processResult($request);        
+ 
+        $this->assertEquals(200, $response->getStatusCode());
+        
+
+        $this->assertDatabaseHas('controlid_jobs', [
+            'identificador_dispositivo' => $this->dispositivo->identificador_unico,
+            'user_able_type' => get_class($this->visitante),
+            'user_able_id' => $this->visitante->id,
+            'endpoint' => 'add_group_user',
+            'uuid' => $uuid,
+            'status' => 1,
+        ]); 
+        
+
+        // Verificar se o job de adicionar o grupo ao visitante foi criado
+        $this->assertDatabaseHas('controlid_jobs', [
+            'identificador_dispositivo' => $this->dispositivo->identificador_unico,
+            'user_able_type' => get_class($this->visitante),
+            'user_able_id' => $this->visitante->id,
+            'endpoint' => 'upload_image_user',           
+            'status' => 0,
+        ]);
+
+        // criar mais um novo request push para adicionar a imagem do visitante
+        $request = new Request();
+        $uuid = Str::uuid()->toString();
+        $request->merge([
+            'deviceId' => $this->dispositivo->identificador_unico,
+            'uuid' => $uuid,
+            'is_test' => false,
+        ]);
+
+        $deviceId = $request->input('deviceId');
+        $uuid = $request->input('uuid');
+
+        $pushService = new ControlIdJobService($this->jobRepository);
+        $this->visitante->user->foto = 'moradores/4JmJt6WxNxKEf4HYMkS5Dwj90CsXCxhgLvLVLX88.jpg';
+        $this->visitante->user->save();
+        $response = $pushService->processPush($deviceId, $uuid);
+     
+        $base64Content = base64_encode(file_get_contents(Storage::path('public/moradores/4JmJt6WxNxKEf4HYMkS5Dwj90CsXCxhgLvLVLX88.jpg')));   
+    
+        $this->assertEquals([
+            "verb" => "POST",
+            "endpoint" => "user_set_image",
+            "body" => $base64Content,
+            "queryString" => http_build_query([
+                'user_id' => $this->visitante->autorizacoesDispositivos->first()->user_id_externo,
+                'match' => 1,
+                'timestamp' => time()
+            ]),
+            'contentType' => 'application/octet-stream'
+        ], $response);
+        
+        
+        // REQUEST RESULT DO CONTROLID COM O RESULTADO DO PUSH
+        $request = new Request();
+        $request->merge([
+            'response' => '{"scores":{"bounds_width":118,"horizontal_center_offset":-160,"vertical_center_offset":32,"center_pose_quality":915,"sharpness_quality":750},"success":true,"errors":[{"code":3,"message":"Face exists","info":{"match_user_id":1003088,"match_confidence":1048}}]}',
+            'deviceId' => $this->dispositivo->identificador_unico,
+            'uuid' => $uuid,
+            'endpoint' => 'upload_image_user',
+        ]);
+
+        $controlidService = new ControlIdJobService($this->jobRepository);
+        $response = $controlidService->processResult($request);        
+ 
+        $this->assertEquals(200, $response->getStatusCode());
+
+        $this->assertDatabaseHas('controlid_jobs', [
+            'identificador_dispositivo' => $this->dispositivo->identificador_unico,
+            'user_able_type' => get_class($this->visitante),
+            'user_able_id' => $this->visitante->id,
+            'endpoint' => 'upload_image_user',
+            'uuid' => $uuid,
+            'status' => 1,
+        ]);
+
+        $this->assertDatabaseHas('autorizacao_dispositivos', [
+            'user_id_externo' => $this->visitante->autorizacoesDispositivos->first()->user_id_externo,
+            'authorizable_type' => get_class($this->visitante),
+            'authorizable_id' => $this->visitante->id,
+            'identificador_dispositivo' => $this->dispositivo->identificador_unico,
+            'status' => 'autorizado',
+        ]);        
+    }    
 }

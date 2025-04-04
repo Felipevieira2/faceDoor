@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('nome');
             $table->string('localizacao'); // 'entrada_condominio', 'saida_condominio', 'torre'
-            $table->string('identificador_unico');
+            $table->string('identificador_unico')->unique();
             $table->string('fabricante');
             $table->string('username')->nullable();
             $table->string('password')->nullable();
