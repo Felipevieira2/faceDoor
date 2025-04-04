@@ -5,24 +5,7 @@
 		</div>
 
 		<!-- Layout responsivo para filtros e busca -->
-		<div class="flex flex-col sm:flex-row justify-between  border-gray-200 dark:border-gray-700 pb-3 gap-3">
-			<!--   select dos tipo de entidade	  -->
-			   
-			<div class="flex justify-between items-center gap-1 w-full sm:w-auto  ">
-				<!-- label  select dos tipo de entidade -->
-				<label for="tipo_entidade"
-					class="block text-lg font-medium text-gray-700 dark:text-gray-300">Dispositivo:</label>
-				<select v-model="selectedLocation" name="localizacao" id="localizacao" @change="locationChanged()"
-					class="w-full px-1 py-1 border rounded-lg focus:ring-2
-					 focus:ring-indigo-500 focus:border-indigo-500 focus-visible:outline-none 
-					 transition-colors duration-200 dark:bg-gray-700 dark:text-white dark:border-gray-600
-					  border-gray-300">
-
-					<option v-for="localizacao in locations" :key="localizacao.id" :value="localizacao.id">
-						{{ localizacao.localizacao }}
-					</option>
-				</select>
-			</div>
+		<div class="flex flex-col sm:flex-row justify-between border-gray-200 dark:border-gray-700 pb-3 gap-3">
 			<!-- Filtros em botões -->
 			<div class="flex gap-2 my-3 overflow-x-auto pb-2">
 				<label for="tipo_entidade"
@@ -60,7 +43,6 @@
 					Processando
 				</button>
 			</div>
-
 		</div>
 		<!-- Campo de busca -->
 		<div class="flex flex-wrap justify-start sm:justify-start gap-2 overflow-x-auto mb-3  w-full sm:w-auto">
@@ -151,19 +133,55 @@
 										autorizacao.apartamento }}</div>
 								</td>
 								<td class="px-3 sm:px-6 py-4 whitespace-nowrap">
-
-
-									<div v-for="autorizacao_item in autorizacao.autorizacoes"
-										:key="autorizacao_item.id">
-										<span :class="{
-											'px-2 inline-flex text-xs leading-5 font-semibold rounded-full': true,
-											'bg-green-100 dark:bg-green-900 text-green-800 dark:text-white': autorizacao_item.status == 'autorizado',
-											'bg-green-100 dark:bg-blue-500 text-blue-800 dark:text-black': autorizacao_item.status == 'processando',
-											'bg-green-100 dark:bg-yellow-500 text-yellow-800 dark:text-black': autorizacao_item.status == 'aguardando autorização',
-											'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200': autorizacao_item.status == 'revogado'
-										}">
-											{{ getStatusName(autorizacao_item.status) }}
-										</span>
+									<div class="flex gap-1 flex-wrap">
+										<div v-for="autorizacao_item in autorizacao.autorizacoes" :key="autorizacao_item.id">
+											<div :class="[
+												'flex flex-col rounded-md overflow-hidden shadow-sm border-l-4 min-w-32 mx-1 my-1',
+												autorizacao_item.status === 'autorizado' ? 'border-l-green-500 bg-green-50 dark:bg-green-900/20' : 
+												autorizacao_item.status === 'processando' ? 'border-l-blue-500 bg-blue-50 dark:bg-blue-900/20' :
+												autorizacao_item.status === 'aguardando' ? 'border-l-yellow-500 bg-yellow-50 dark:bg-yellow-900/20' : 
+												autorizacao_item.status === 'nao_autorizado' ? 'border-l-red-500 bg-red-50 dark:bg-red-900/20' :
+												'border-l-gray-500 bg-gray-50 dark:bg-gray-900/20'
+											]">
+												<!-- Cabeçalho do card com ícone e tipo de dispositivo -->
+												<div class="flex items-center px-2 py-1 border-b border-gray-200 dark:border-gray-700">
+													<i :class="[
+														'mr-2 text-lg',
+														autorizacao_item.status === 'autorizado' ? 'fas fa-door-open text-green-600 dark:text-green-400' : 
+														autorizacao_item.status === 'processando' ? 'fas fa-cog fa-spin text-blue-600 dark:text-blue-400' :
+														autorizacao_item.status === 'aguardando' ? 'fas fa-hourglass-half text-yellow-600 dark:text-yellow-400' : 
+														autorizacao_item.status === 'nao_autorizado' ? 'fas fa-ban text-red-600 dark:text-red-400' :
+														'fas fa-question-circle text-gray-600 dark:text-gray-400'
+													]"></i>
+												<!-- ID do Dispositivo -->
+												<div class="flex items-center">
+														
+														<span class="text-xs text-gray-700 dark:text-gray-300 truncate max-w-32" :title="autorizacao_item.identificador_dispositivo">
+															{{ autorizacao_item.localizacao }}
+														</span>
+													</div>
+												</div>
+												<!-- Corpo do card com informações do dispositivo -->
+												<div class="px-2 py-1">
+													<!-- Status -->
+													<div class="flex items-center mb-1">
+														<span class="text-xs text-gray-500 dark:text-gray-400 w-14">Status:</span>
+														<span :class="[
+															'text-xs font-semibold px-1.5 py-0.5 rounded-full',
+															autorizacao_item.status === 'autorizado' ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100' :
+															autorizacao_item.status === 'processando' ? 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100' :
+															autorizacao_item.status === 'aguardando' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100' :
+															autorizacao_item.status === 'nao_autorizado' ? 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100' :
+															'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100'
+														]">
+															{{ autorizacao_item.status === 'processando' ? 'Processando' : getStatusName(autorizacao_item.status) }}
+														</span>
+													</div>
+													
+													
+												</div>
+											</div>
+										</div>
 									</div>
 								</td>
 								<td class="px-3 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm font-medium">
@@ -314,7 +332,7 @@
 							</div>
 							<div>
 								<p class="text-sm text-gray-500 dark:text-gray-400">Localização:</p>
-								<p class="text-sm font-medium dark:text-white">{{ selectedDevice.location }}</p>
+								<p class="text-sm font-medium dark:text-white">{{ selectedDevice.localizacao || selectedDevice.location }}</p>
 							</div>
 							<div>
 								<p class="text-sm text-gray-500 dark:text-gray-400">ID do Dispositivo:</p>
@@ -495,7 +513,7 @@
 							</div>
 							<div>
 								<p class="text-gray-500 dark:text-gray-400">Localização:</p>
-								<p class="dark:text-white">{{ authDevice.location }}</p>
+								<p class="dark:text-white">{{ authDevice.localizacao }}</p>
 							</div>
 							<div>
 								<p class="text-gray-500 dark:text-gray-400">Torre:</p>
@@ -568,7 +586,7 @@
 							</div>
 							<div>
 								<p class="text-gray-500 dark:text-gray-400">Localização:</p>
-								<p class="dark:text-white">{{ revokeDevice.location }}</p>
+								<p class="dark:text-white">{{ revokeDevice.localizacao }}</p>
 							</div>
 							<div>
 								<p class="text-gray-500 dark:text-gray-400">Torre:</p>
@@ -704,7 +722,6 @@ export default {
 		const showModal = ref(false);
 		const selectedDevice = ref(null);
 		const locations = ref([]);
-		const selectedLocation = ref('');
 		const alertContainer = ref(null);
 		const dispositivosDisponiveis = ref([]);
 		
@@ -795,91 +812,12 @@ export default {
 		const fetchautorizacoes = async (page = 1) => {
 			loading.value = true;
 			try {
-				// Dados estáticos para simular a resposta da API
-				// const dadosEstaticos = {
-				// 	data: [
-				// 		{
-				// 			id: 1,
-				// 			name: 'João Silva',
-				// 			foto: 'https://randomuser.me/api/portraits/men/1.jpg',
-				// 			cpf: '123.456.789-10',
-				// 			type: 'face',
-				// 			torre: 'A',
-				// 			apartamento: '101',
-				// 			status: 'autorizado',
-				// 			autorizacoes: [
-				// 				{ id: 1, status: 'autorizado' }
-				// 			]
-				// 		},
-				// 		{
-				// 			id: 2,
-				// 			name: 'Maria Oliveira',
-				// 			foto: 'https://randomuser.me/api/portraits/women/2.jpg',
-				// 			cpf: '987.654.321-00',
-				// 			type: 'rfid',
-				// 			torre: 'B',
-				// 			apartamento: '202',
-				// 			status: 'aguardando autorização',
-				// 			autorizacoes: [
-				// 				{ id: 2, status: 'aguardando autorização' }
-				// 			]
-				// 		},
-				// 		{
-				// 			id: 3,
-				// 			name: 'Pedro Santos',
-				// 			foto: 'https://randomuser.me/api/portraits/men/3.jpg',
-				// 			cpf: '555.444.333-22',
-				// 			type: 'entrada',
-				// 			torre: 'C',
-				// 			apartamento: '303',
-				// 			status: 'revogado',
-				// 			autorizacoes: [
-				// 				{ id: 3, status: 'revogado' }
-				// 			]
-				// 		},
-				// 		{
-				// 			id: 4,
-				// 			name: 'Ana Pereira',
-				// 			foto: 'https://randomuser.me/api/portraits/women/4.jpg',
-				// 			cpf: '111.222.333-44',
-				// 			type: 'card',
-				// 			torre: 'A',
-				// 			apartamento: '104',
-				// 			status: 'processando',
-				// 			autorizacoes: [
-				// 				{ id: 4, status: 'processando' }
-				// 			]
-				// 		}
-				// 	],
-				// 	meta: {
-				// 		current_page: 1,
-				// 		from: 1,
-				// 		to: 4,
-				// 		total: 4,
-				// 		last_page: 1
-				// 	}
-				// };
-				
-				// Simular tempo de resposta da API
-				// setTimeout(() => {
-				// 	autorizacoes.value = dadosEstaticos.data;
-				// 	pagination.current_page = dadosEstaticos.meta.current_page;
-				// 	pagination.from = dadosEstaticos.meta.from;
-				// 	pagination.to = dadosEstaticos.meta.to;
-				// 	pagination.total = dadosEstaticos.meta.total;
-				// 	pagination.last_page = dadosEstaticos.meta.last_page;
-				// 	loading.value = false;
-				// }, 500);
-				
-				// Comentando a chamada real de API
-
 				const response = await axios.get('/api/controle-acesso/autorizacoes', {
 					params: {
 						page,
 						search: searchTerm.value,
 						status: filters.status,
-						device_type: filters.deviceType,
-						device_id: selectedLocation.value
+						device_type: filters.deviceType
 					}
 				}).then(response => { // loading.value = false;
 
@@ -909,41 +847,6 @@ export default {
 					window.location.href = '/login';
 				}
 				loading.value = false;
-			}
-		};
-
-		// Buscar locais
-		const fetchLocations = async () => {
-			try {
-				// Dados estáticos para simular a resposta da API
-				// const locacoesEstaticas = [
-				// 	{ id: 1, localizacao: 'Portaria Principal' },
-				// 	{ id: 2, localizacao: 'Entrada de Serviço' },
-				// 	{ id: 3, localizacao: 'Academia' },
-				// 	{ id: 4, localizacao: 'Piscina' },
-				// 	{ id: 5, localizacao: 'Salão de Festas' }
-				// ];
-				
-				// locations.value = locacoesEstaticas;
-				// if (locations.value.length > 0) {
-				// 	selectedLocation.value = locations.value[0].id;
-				// }
-				// locationChanged();
-				
-				// Comentando a chamada real de API
-				
-				const response = await axios.get('/api/controle-acesso/localizacoes');
-
-				locations.value = response.data;
-				
-				if (locations.value.length > 0) {
-					selectedLocation.value = locations.value[0].id;
-				}
-
-				locationChanged();
-			
-			} catch (error) {
-				console.error('Erro ao buscar locais:', error);
 			}
 		};
 
@@ -1015,7 +918,7 @@ export default {
 					foto: autorizacoes.value.find(a => a.id === deviceId)?.foto || 'https://randomuser.me/api/portraits/lego/1.jpg',
 					cpf: autorizacoes.value.find(a => a.id === deviceId)?.cpf || '000.000.000-00',
 					type: autorizacoes.value.find(a => a.id === deviceId)?.type || 'face',
-					location: 'Portaria Principal',
+					localizacao: 'Portaria Principal',
 					torre: autorizacoes.value.find(a => a.id === deviceId)?.torre || 'A',
 					apartamento: autorizacoes.value.find(a => a.id === deviceId)?.apartamento || '101',
 					identificador: `DEV-${deviceId}`,
@@ -1095,7 +998,7 @@ export default {
 				// 	foto: autorizacoes.value.find(a => a.id === deviceId)?.foto || 'https://randomuser.me/api/portraits/lego/1.jpg',
 				// 	cpf: autorizacoes.value.find(a => a.id === deviceId)?.cpf || '000.000.000-00',
 				// 	type: autorizacoes.value.find(a => a.id === deviceId)?.type || 'face',
-				// 	location: 'Portaria Principal',
+				// 	localizacao: 'Portaria Principal',
 				// 	torre: autorizacoes.value.find(a => a.id === deviceId)?.torre || 'A',
 				// 	apartamento: autorizacoes.value.find(a => a.id === deviceId)?.apartamento || '101',
 				// 	identificador: `DEV-${deviceId}`,
@@ -1137,7 +1040,7 @@ export default {
 					data_nascimento: '15/05/1985',
 					tipo_pessoa: autorizacoes.value.find(a => a.id === deviceId)?.type === 'face' ? 'Morador' : 'Visitante',
 					type: autorizacoes.value.find(a => a.id === deviceId)?.type || 'face',
-					location: 'Portaria Principal',
+					localizacao: 'Portaria Principal',
 					torre: autorizacoes.value.find(a => a.id === deviceId)?.torre || 'A',
 					apartamento: autorizacoes.value.find(a => a.id === deviceId)?.apartamento || '101',
 					bloco: 'Residencial',
@@ -1239,7 +1142,7 @@ export default {
 			const statuses = {
 				'autorizado': 'Autorizado',
 				'aguardando autorização': 'Aguardando Autorização',
-				'revogado': 'Revogado',
+				'nao_autorizado': 'Revogado',
 				'processando': 'Processando'
 			};
 
@@ -1273,12 +1176,6 @@ export default {
 			if (e.key === 'Escape') {
 				closeGallery();
 			}
-		};
-
-		// Handler para mudança de localização
-		const locationChanged = () => {
-			filters.location = selectedLocation.value;
-			fetchautorizacoes(1); // oque é esse 1?  
 		};
 
 		// Cancelar revogação
@@ -1319,9 +1216,6 @@ export default {
 				console.error('Erro ao revogar dispositivo:', error);
 				// Mostrar alerta de erro
 				alertCustom.error('Erro ao revogar acesso. Tente novamente.');
-				if (error.response && error.response.status === 401) {
-					window.location.href = '/login';
-				}
 			}
 		};
 
@@ -1422,8 +1316,8 @@ export default {
 			// Definir loading como true ao iniciar
 			loading.value = true;
 
-			// Buscar autorizações
-			fetchLocations();
+			// Buscar autorizações diretamente, sem chamar fetchLocations
+			fetchautorizacoes();
 		});
 
 		return {
@@ -1435,7 +1329,6 @@ export default {
 			showModal,
 			selectedDevice,
 			locations,
-			selectedLocation,
 			showGallery,
 			currentImage,
 			showAuthModal,
@@ -1447,7 +1340,6 @@ export default {
 			closeGallery,
 			fetchautorizacoes,
 			searchautorizacoes,
-			locationChanged,
 			authorizeDevice,
 			confirmAuth,
 			cancelAuth,

@@ -8,6 +8,8 @@ use App\Models\Visitante;
 use App\Models\Dispositivo;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 
 use App\Models\AutorizacaoDispositivo;
 use Illuminate\Support\Facades\Storage;
@@ -124,7 +126,6 @@ class AutorizacaoController extends Controller
     {
         try {
             $user = User::findOrFail($userId);  
-
             
             $model_class = $user->morador ? Morador::class : Visitante::class;
           
@@ -140,16 +141,17 @@ class AutorizacaoController extends Controller
             }
             
             $model_selected = $model_class::findOrFail($userId);
-
-         
             
+            // Obter o dispositivo para acessar seu tipo (fabricante)
+            $dispositivo = Dispositivo::findOrFail($deviceId);
+         
             // Formatando a resposta para o Vue
             $response = [
                 'id' => $query_autorizacoes->id,
                 'name' => $query_autorizacoes->name,    
                 'identificador' => $query_autorizacoes->identificador,
-                'type' => $query_autorizacoes->type,
-                'location' => $query_autorizacoes->location,
+                'type' => $dispositivo->fabricante, // Obtem o tipo do dispositivo relacionado
+                'location' => $dispositivo->localizacao, // Obtem a localização do dispositivo relacionado
                 'status' => $query_autorizacoes->status,
                 'created_at' => $query_autorizacoes->created_at,
                 'updated_at' => $query_autorizacoes->updated_at,
@@ -157,7 +159,7 @@ class AutorizacaoController extends Controller
             
             return response()->json($response);
         } catch (\Exception $e) {
-            \Log::error('Erro ao buscar detalhes da autorização: ' . $e->getMessage() . ' - '. $e->getLine() . ' - '. $e->getFile());
+            Log::error('Erro ao buscar detalhes da autorização: ' . $e->getMessage() . ' - '. $e->getLine() . ' - '. $e->getFile());
             return response()->json([
                 'message' => 'Erro ao buscar detalhes da autorização: ' . $e->getMessage()
             ], 500);
@@ -224,78 +226,32 @@ class AutorizacaoController extends Controller
      */
     public function apiIndex(Request $request)
     {
-
-        /*
-        * Preciso pega todos os moradores e visitantes e checar quais dispositivos eles precisam de autorização ou revogação
-        * 
-        * 
-        * 
-        * 
-        */
         try {
-            // $model_selected = $request->get('model_selected');
-
-
-            // if($model_selected == 'morador'){
-            //     $model_selected = Morador::class;
-            // }elseif($model_selected == 'visitante'){
-            //     $model_selected = Visitante::class;
-            // }
-           
-            // $query = AutorizacaoDispositivo::with(['authorizable.user']);
-            // obter todos os moradores e visitantes 
-
-            $dispositivo_id = $request->get('device_id');                    
+            // 1. Obtendo todos os dispositivos ativos
+            $dispositivosAtivos = Dispositivo::where('ativo', true)->get();
             
-            $dispositivo = Dispositivo::findOrFail($dispositivo_id);
-            $model_selected_users  = Morador::with('user')->where('ativo', 1);
-
-            if($dispositivo->torre_id){
-                //pega todos os moradores da torre
-                $model_selected_users = $model_selected_users->leftJoin('apartamentos', 'moradores.apartamento_id', '=', 'apartamentos.id')
-                ->leftJoin('torres', 'apartamentos.torre_id', '=', 'torres.id')
-                ->where('torres.id', $dispositivo->torre_id)
-                ->select('moradores.*', 'user.id as user_id'); // Especificar claramente que queremos todas as colunas da tabela moradores
-            }
-
-            // // Aplicar filtros de status se definidos
+            // Obtendo moradores ativos
+            $moradores = Morador::with(['user', 'apartamento.torre', 'autorizacoesDispositivos'])
+                         ->where('ativo', true);
+            
+            // Aplicar filtros de status se definidos
             if ($request->filled('status')) {
-
-                if($request->status == 'aguardando autorização'){
-                    $model_selected_users->whereDoesntHave('autorizacoesDispositivos', function($query) use ($request){
-                        $query->whereIn('status', ['autorizado', 'processando', 'revogado']);
-                        $query->where('dispositivo_id', $request->device_id);
+                if ($request->status == 'aguardando') {
+                    // Precisamos filtrar por 'processando' pois é o que usamos no banco agora
+                    $moradores->whereHas('autorizacoesDispositivos', function($query) {
+                        $query->where('status', 'aguardando');
                     });
-
-                
-                }else{
-                    $model_selected_users->whereHas('autorizacoesDispositivos', function($query) use ($request){
+                } else {
+                    $moradores->whereHas('autorizacoesDispositivos', function($query) use ($request) {
                         $query->where('status', $request->status);
-                        $query->where('dispositivo_id', $request->device_id);
-                    }); 
-                                      
+                    });
                 }
-                
             }
-
-            // buscar todas as autorizacoes de moradores e visitantes
-            $autorizacoesPorDispositivo = AutorizacaoDispositivo::where('dispositivo_id', $dispositivo_id)
-                                                    ->whereIn('authorizable_type', [Morador::class, Visitante::class])
-                                                     // add condition to query
-                                                        
-                                                    ->when($request->filled('status'), function($query) use ($request) {
-                                                        return $query->where('status', $request->status);
-                                                    })
-
-                                                    ->whereIn('authorizable_id', $model_selected_users->pluck('moradores.id')                                                                                                      
-                                                    ->concat($model_selected_users->pluck('moradores.id')))
-                                                    ->get();                                                                           
             
             // Aplicar busca se definida
             if ($request->filled('search')) {
                 $search = $request->search;
-                $model_selected_users->where(function($q) use ($search) {
-                    //busque no relacionamento de moradores com user
+                $moradores->where(function($q) use ($search) {
                     $q->whereHas('user', function($query) use ($search) {
                         $query->where('name', 'like', "%{$search}%")
                               ->orWhere('email', 'like', "%{$search}%")
@@ -303,72 +259,40 @@ class AutorizacaoController extends Controller
                     });
                 });
             }
-            //Preciso saber quais são os moradores ou visitantes precisam de autorização ou revogação no dispositivo selecionado (dispositivo_id)            
-            $paginator = $model_selected_users->orderBy('created_at', 'desc')->paginate(10);
-
-
-            // Formata os dados para o componente Vue
-            $formattedData = $paginator->map(function ($model_selected_user) use ($autorizacoesPorDispositivo, $dispositivo) {
             
-                $autorizacoes_moradores = $autorizacoesPorDispositivo->filter(function($autorizacao) use ($model_selected_user){                   
-                    return $autorizacao->authorizable_type == Morador::class && $autorizacao->authorizable_id == $model_selected_user->id;
-                });
-               
-
-                if(count($autorizacoes_moradores) == 0){ //para usuários que estão aguardando autorização
-                   //create App\Models\AutorizacaoDispositivo 
-
-                   $autorizacao = new AutorizacaoDispositivo();
-                   $autorizacao->dispositivo_id = $dispositivo->id;
-                   $autorizacao->authorizable_type = Morador::class;
-                   $autorizacao->authorizable_id = $model_selected_user->id;
-                   $autorizacao->status = 'aguardando autorização'; 
-                   $autorizacao->identificador_dispositivo = $dispositivo->identificador_unico;
-                   $autorizacao->authorizable_id = $model_selected_user->id;
-                   $autorizacao->authorizable_type = Morador::class;   
-                   $autorizacao->data_inicio_visitante = null;
-                   $autorizacao->data_fim_visitante = null;
-                   $autorizacao->messagem_erro = null;
-                   $autorizacao->user_id_externo = null;
-                   $autorizacao->match_user_id_externo = null;
-                   $autorizacao->group_id_externo = null;
-                   $autorizacao->autorizado_por = null;
-                   $autorizacao->created_at = null;
-                   $autorizacao->updated_at = null;
-
-                   $autorizacoes_moradores->push($autorizacao);
-                    
-                  
-                }
-    
+            // Obter resultados paginados
+            $paginator = $moradores->orderBy('created_at', 'desc')->paginate(10);
+            
+            // Formatar dados para o componente Vue
+            $formattedData = $paginator->map(function ($morador) use ($dispositivosAtivos) {
+                // 2. Verificar dispositivos que o usuário pode ter acesso
+                $dispositivosAcessiveis = $this->getDispositivosAcessiveis($morador, $dispositivosAtivos);
+                
+                // 3. Verificar/criar autorizações para os dispositivos acessíveis
+                $autorizacoes = $this->processarAutorizacoes($morador, $dispositivosAcessiveis);
+                
+                // Retornar dados formatados
                 return [
-                    'user_id' => $model_selected_user->user_id,
-                    'id' => $model_selected_user->id,
-                    'name' => $model_selected_user->user->name,      
-                    'cpf' => $model_selected_user->user->cpf,
-                    'apartamento' => $model_selected_user->apartamento->numero,
-                    'torre' => $model_selected_user->apartamento->torre->nome,
-                    'type' =>  $model_selected_user->nome_entidade(), 
-                    'autorizacoes' => $autorizacoes_moradores,
-                    'foto' => Storage::url($model_selected_user->user->foto),
-                                 
+                    'user_id' => $morador->user_id,
+                    'id' => $morador->id,
+                    'name' => $morador->user->name,
+                    'cpf' => $morador->user->cpf,
+                    'apartamento' => $morador->apartamento->numero,
+                    'torre' => $morador->apartamento->torre->nome,
+                    'type' => $morador->nome_entidade(),
+                    'autorizacoes' => $autorizacoes,
+                    'foto' => Storage::url($morador->user->foto),
                 ];
             });
-
-           
-            //remover os moradores que não tem autorizações por que preciso disso??????
-            foreach($formattedData as $key => $value){
-
-                
-                if( count($value['autorizacoes']) == 0){
-                    unset($formattedData[$key]);
-                }
+            
+            // Filtrar moradores sem autorizações, se necessário
+            if ($request->filled('only_with_authorizations') && $request->only_with_authorizations) {
+                $formattedData = $formattedData->filter(function($item) {
+                    return count($item['autorizacoes']) > 0;
+                });
             }
-
-
-          
-                        
-            // Retorna no formato esperado pelo Vue
+            
+            // Retornar no formato esperado pelo Vue
             return response()->json([
                 'data' => $formattedData,
                 'meta' => [
@@ -382,11 +306,91 @@ class AutorizacaoController extends Controller
             ]);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Erro ao buscar autorizações: ' . $e->getMessage()
+                'message' => 'Erro ao buscar autorizações: ' . $e->getMessage() . ' - '. $e->getLine() . ' - '. $e->getFile()
             ], 500);
         }
     }
-
+    
+    /**
+     * Determina quais dispositivos um morador pode acessar
+     * 
+     * @param Morador $morador
+     * @param Collection $dispositivosAtivos
+     * @return Collection
+     */
+    private function getDispositivosAcessiveis($morador, $dispositivosAtivos)
+    {
+        // Filtrar dispositivos com base nas regras de acesso
+        return $dispositivosAtivos->filter(function($dispositivo) use ($morador) {
+            // Regra 1: Dispositivos sem torre (entrada do condomínio) são acessíveis a todos
+            if (empty($dispositivo->torre_id)) {
+                return true;
+            }
+            
+            // Regra 2: Dispositivos com torre específica são acessíveis apenas a moradores daquela torre
+            if ($dispositivo->torre_id == $morador->apartamento->torre_id) {
+                return true;
+            }
+            
+            return false;
+        });
+    }
+    
+    /**
+     * Processa autorizações para dispositivos acessíveis
+     * 
+     * @param Morador $morador
+     * @param Collection $dispositivosAcessiveis
+     * @return Collection
+     */
+    private function processarAutorizacoes($morador, $dispositivosAcessiveis)
+    {
+        // NOTA IMPORTANTE: No banco de dados, usamos 'aguardando autorização' como status para novas autorizações
+        // que ainda não foram explicitamente autorizadas. Na interface, este status é tratado como
+        // "aguardando autorização". É necessário ajustar o componente Vue para exibir corretamente este status.
+        
+        $autorizacoes = collect();
+        
+        // Para cada dispositivo acessível
+        foreach ($dispositivosAcessiveis as $dispositivo) {
+            // Verificar se já existe uma autorização
+            $autorizacaoExistente = $morador->autorizacoesDispositivos()
+                ->where('identificador_dispositivo', $dispositivo->identificador_unico)
+                ->first();
+            
+            if ($autorizacaoExistente) {
+                // Se existe, adiciona à coleção com o tipo apenas para visualização
+                // Não estamos salvando o type, apenas adicionando à coleção de retorno
+                $autorizacaoExistente = clone $autorizacaoExistente;
+                $autorizacaoExistente->type = $dispositivo->fabricante;
+                $autorizacaoExistente->localizacao = $dispositivo->localizacao;
+                $autorizacoes->push($autorizacaoExistente);
+            } else {
+                // Se não existe, cria uma nova autorização com status "processando"
+           
+                $novaAutorizacao = new AutorizacaoDispositivo([
+                    'identificador_dispositivo' => $dispositivo->identificador_unico,
+                    'localizacao' => $dispositivo->localizacao,
+                    'status' => 'aguardando',
+                    'authorizable_id' => $morador->id,          
+                    'authorizable_type' => get_class($morador),
+                    'type' => $dispositivo->fabricante,
+                    'dispositivo_id' => $dispositivo->id // Adicionando dispositivo_id que é obrigatório
+                ]);
+                
+                // // Salvar a nova autorização no banco sem o campo type
+                // $autorizacaoSalva = $morador->autorizacoesDispositivos()->save($novaAutorizacao);
+                
+                // // Adicionar o type apenas para visualização na coleção que será retornada
+                // $autorizacaoSalva->type = $dispositivo->fabricante;
+                
+                // Adicionar à coleção para retorno
+                $autorizacoes->push($novaAutorizacao);
+            }
+        }
+        
+        return $autorizacoes;
+    }
 
     public function apiLocalizacoesIndex()
     {

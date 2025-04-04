@@ -9,6 +9,7 @@ use App\Models\Dispositivo;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class DispositivoController extends Controller
 {
@@ -51,7 +52,7 @@ class DispositivoController extends Controller
                 ->with('success', 'Dispositivo criado com sucesso!');
         } catch (\Throwable $th) {
 
-            \Log::error('Erro ao criar dispositivo: ' . $th->getMessage() . ' -  Linha: ' . $th->getLine());
+            Log::error('Erro ao criar dispositivo: ' . $th->getMessage() . ' -  Linha: ' . $th->getLine());
             return redirect()->back()->with('error', 'Erro ao criar dispositivo');
         }
 
@@ -111,7 +112,7 @@ class DispositivoController extends Controller
                 ->with('success', 'Dispositivo atualizado com sucesso!');
         } catch (\Throwable $th) {
 
-            \Log::error('Erro ao atualizar dispositivo: ' . $th->getMessage() . ' -  Linha: ' . $th->getLine());
+            Log::error('Erro ao atualizar dispositivo: ' . $th->getMessage() . ' -  Linha: ' . $th->getLine());
             return redirect()->back()->with('error', 'Erro ao atualizar dispositivo');
         }
     }
