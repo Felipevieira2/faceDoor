@@ -1,5 +1,5 @@
 <div class="bg-white shadow rounded-lg overflow-hidden {{ isset($class) ? $class : '' }}">
-    @if($title)
+    @if(isset($title))
         <div class="px-4 py-5 sm:px-6  border-gray-200">
             <h3 class="text-lg font-medium leading-6">{{ isset($title) ? $title : '' }}</h3>
         </div>
