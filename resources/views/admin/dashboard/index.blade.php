@@ -1,7 +1,27 @@
 <x-layout.admin.app title="Dashboard">
     <div class="mb-6">
         <h1 class="text-2xl font-bold ">Painel do Administrador</h1>
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Nome do condomínio.</p>
+        {{-- <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Convite moradores para o sistema.</p> --}}
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Convite moradores para o sistema.</p>
+        <button id="copyRegisterLink" class="w-full block px-4 py-2 bg-white rounded-md shadow-sm hover:bg-gray-50 transition-colors duration-150">
+            <div class="flex items-center">
+                <svg class="h-5 w-5 text-purple-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+                <span class="ml-2 text-sm font-medium ">Copiar Link de Cadastro</span>
+            </div>
+        </button>
+        <script>
+            document.getElementById('copyRegisterLink').addEventListener('click', function() {
+                const registerUrl = "{{ route('register') }}";
+                navigator.clipboard.writeText(registerUrl).then(function() {
+                    alert('Link de cadastro copiado com sucesso!');
+                }).catch(function() {
+                    alert('Falha ao copiar o link de cadastro.');
+                });
+            });
+        </script>
+        
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -237,6 +257,24 @@
                             <span class="ml-2 text-sm font-medium ">Registrar Ocorrência</span>
                         </div>
                     </a>
+                    <button id="copyRegisterLink" class="w-full block px-4 py-2 bg-white rounded-md shadow-sm hover:bg-gray-50 transition-colors duration-150">
+                        <div class="flex items-center">
+                            <svg class="h-5 w-5 text-purple-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                            </svg>
+                            <span class="ml-2 text-sm font-medium ">Copiar Link de Cadastro</span>
+                        </div>
+                    </button>
+                    <script>
+                        document.getElementById('copyRegisterLink').addEventListener('click', function() {
+                            const registerUrl = "{{ route('register') }}";
+                            navigator.clipboard.writeText(registerUrl).then(function() {
+                                alert('Link de cadastro copiado com sucesso!');
+                            }).catch(function() {
+                                alert('Falha ao copiar o link de cadastro.');
+                            });
+                        });
+                    </script>
                 </div>
             </x-ui.card>
 

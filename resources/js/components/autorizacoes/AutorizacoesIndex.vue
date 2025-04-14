@@ -221,14 +221,14 @@
 										<button @click="openAuthAllModal(autorizacao)"
 											class="bg-green-600 text-white px-2 py-1 rounded-md hover:bg-green-700 transition text-xs"
 											title="Autorizar Todos">
-											<i class="fa-solid fa-check-double mr-1"></i> Autorizar Todos
+											<i class="fa-solid fa-check-double mr-1"></i> Autorizar
 										</button>
 
 										<!-- Botão para revogar em massa -->
-										<button @click="openRevokeAllModal(autorizacao.autorizacoes)"
+										<button @click="openRevokeAllModal(autorizacao)"
 											class="bg-red-600 text-white px-2 py-1 rounded-md hover:bg-red-700 transition text-xs"
-											title="Revogar Todos">
-											<i class="fa-solid fa-ban mr-1"></i> Revogar Todos
+											title="Revogar">
+											<i class="fa-solid fa-ban mr-1"></i> Revogar
 										</button>
 
 										<!-- Botão para visualizar detalhes -->
@@ -493,11 +493,11 @@
 					<div class="flex justify-between space-x-3 mt-6 pt-3 border-t dark:border-gray-700">
 						<button @click="showAuthAllModalVisible = true"
 							class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition cursor-pointer">
-							<i class="fas fa-check-circle mr-1"></i> Autorizar Todos
+							<i class="fas fa-check-circle mr-1"></i> Autorizar 
 						</button>
 						<button @click="showRevokeAllModal = true"
 							class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition cursor-pointer">
-							<i class="fas fa-ban mr-1"></i> Revogar Todos
+							<i class="fas fa-ban mr-1"></i> Revogar 
 						</button>
 						<button @click="showModal = false"
 							class="bg-gray-300 text-gray-700 dark:bg-gray-700 dark:text-white px-4 py-2 rounded-md hover:bg-gray-400 dark:hover:bg-gray-600 transition cursor-pointer">
@@ -807,8 +807,33 @@
 					</button>
 				</div>
 
+				<!-- Cabeçalho com foto e nome -->
+				<div class="flex items-center w-full pb-4 border-b dark:border-gray-700">
+					<img :src="selectedUserForDevices.foto" alt="Foto do usuário"
+						class="w-20 h-20 rounded-full object-cover border-2 border-blue-500">
+					<div
+						class="bg-gray-50 ml-4 w-full dark:bg-gray-700 rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+						<div>
+							<p class="text-sm text-gray-500 dark:text-gray-400">Nome Completo:</p>
+							<p class="text-sm font-medium dark:text-white">{{ selectedUserForDevices.name }}</p>
+						</div>
+						<div>
+							<p class="text-sm text-gray-500 dark:text-gray-400">CPF:</p>
+							<p class="text-sm font-medium dark:text-white">{{ selectedUserForDevices.cpf }}</p>
+						</div>
+						<div>
+							<p class="text-sm text-gray-500 dark:text-gray-400">Apartamento:</p>
+							<p class="text-sm font-medium dark:text-white">{{ selectedUserForDevices.apartamento }}</p>
+						</div>
+						<div>
+							<p class="text-sm text-gray-500 dark:text-gray-400">Torre:</p>
+							<p class="text-sm font-medium dark:text-white">{{ selectedUserForDevices.torre }}</p>
+						</div>
+					</div>
+				</div>
 
-				<div class="space-y-4">
+
+				<div class="space-y-4 mt-4">
 					<div class="bg-red-50 dark:bg-red-900/30 p-4 rounded-lg border-l-4 border-red-500">
 						<p class="text-sm text-red-800 dark:text-red-200">
 							<i class="fas fa-exclamation-triangle mr-2"></i>
@@ -825,38 +850,51 @@
 					<div v-else class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
 						<h4 class="font-medium dark:text-white mb-3">Dispositivos a serem revogados ({{
 							autorizacoesParaRevogar.length }}):</h4>
-						<div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-60 overflow-y-auto p-1">
+						<div class="grid grid-cols-1 md:grid-cols-3 gap-2 max-h-60 overflow-y-auto p-1 flex-wrap">
 							<div v-for="(autorizacao, index) in autorizacoesParaRevogar" :key="index"
-								class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-3 border border-gray-200 dark:border-gray-700 hover:shadow-md transition">
-								<div class="flex items-start gap-3">
-									<img :src="autorizacao.foto" alt="Foto do usuário"
-										class="w-12 h-12 rounded-full object-cover border-2 border-green-500">
-									<div class="flex-1">
-										<h5 class="font-medium dark:text-white text-sm">{{ autorizacao.name }}</h5>
-										<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-											CPF: {{ autorizacao.cpf }}
-										</p>
-										<div class="flex flex-wrap gap-2 mt-2">
-											<span
-												class="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full text-gray-600 dark:text-gray-300">
-												{{ autorizacao.tipo_pessoa || 'Usuário' }}
-											</span>
-											<span
-												class="text-xs bg-blue-100 dark:bg-blue-900/30 px-2 py-0.5 rounded-full text-blue-700 dark:text-blue-300">
-												{{ getDeviceTypeName(autorizacao.type) }}
-											</span>
-											<span
-												class="text-xs bg-green-100 dark:bg-green-900/30 px-2 py-0.5 rounded-full text-green-700 dark:text-green-300">
-												{{ getStatusName(autorizacao.status) }}
-											</span>
-										</div>
-										<div
-											class="flex justify-between items-center mt-2 pt-2 border-t border-gray-100 dark:border-gray-700">
-											<span class="text-xs text-gray-500 dark:text-gray-400">{{ autorizacao.torre
-											}}-{{ autorizacao.apartamento }}</span>
-											<span class="text-xs text-gray-500 dark:text-gray-400">{{
-												formatDate(autorizacao.created_at) }}</span>
-										</div>
+								:class="[
+									'flex flex-col rounded-md overflow-hidden shadow-sm border-l-4 min-w-32 mx-1 my-1',
+									autorizacao.status === 'autorizado' ? 'border-l-green-500 bg-green-50 dark:bg-green-900/20' :
+										autorizacao.status === 'processando' ? 'border-l-blue-500 bg-blue-50 dark:bg-blue-900/20' :
+											autorizacao.status === 'aguardando' ? 'border-l-yellow-500 bg-yellow-50 dark:bg-yellow-900/20' :
+												autorizacao.status === 'nao_autorizado' ? 'border-l-red-500 bg-red-50 dark:bg-red-900/20' :
+													'border-l-gray-500 bg-gray-50 dark:bg-gray-900/20'
+								]">
+								<!-- Cabeçalho do card com ícone e tipo de dispositivo -->
+								<div
+									class="flex items-center px-2 py-1 border-b border-gray-200 dark:border-gray-700">
+									<i :class="[
+										'mr-2 text-lg',
+										autorizacao.status === 'autorizado' ? 'fas fa-door-open text-green-600 dark:text-green-400' :
+											autorizacao.status === 'processando' ? 'fas fa-cog fa-spin text-blue-600 dark:text-blue-400' :
+												autorizacao.status === 'aguardando' ? 'fas fa-hourglass-half text-yellow-600 dark:text-yellow-400' :
+													autorizacao.status === 'nao_autorizado' ? 'fas fa-ban text-red-600 dark:text-red-400' :
+														'fas fa-question-circle text-gray-600 dark:text-gray-400'
+									]"></i>
+									<!-- ID do Dispositivo -->
+									<div class="flex items-center">
+										<span class="text-xs text-gray-700 dark:text-gray-300 truncate max-w-32"
+											:title="autorizacao.identificador_dispositivo">
+											{{ autorizacao.localizacao }}
+										</span>
+									</div>
+								</div>
+								<!-- Corpo do card com informações do dispositivo -->
+								<div class="px-2 py-1">
+									<!-- Status -->
+									<div class="flex items-center mb-1">
+										<span class="text-xs text-gray-500 dark:text-gray-400 w-14">Status:</span>
+										<span :class="[
+											'text-xs font-semibold px-1.5 py-0.5 rounded-full',
+											autorizacao.status === 'autorizado' ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100' :
+												autorizacao.status === 'processando' ? 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100' :
+													autorizacao.status === 'aguardando' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100' :
+														autorizacao.status === 'nao_autorizado' ? 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100' :
+															'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100'
+										]">
+											{{ autorizacao.status === 'processando' ? 'Processando'
+												: getStatusName(autorizacao.status) }}
+										</span>
 									</div>
 								</div>
 							</div>
@@ -1709,8 +1747,8 @@ export default {
 
 		// Abrir modal de revogação em massa com os dispositivos da autorização
 		const openRevokeAllModal = (dispositivos) => {
-			// Verifica se dispositivos é um array válido
-			if (!dispositivos || !Array.isArray(dispositivos)) {
+			// Verifica se dispositivos é um objeto válido com a propriedade autorizacoes como array
+			if (!dispositivos.autorizacoes || !Array.isArray(dispositivos.autorizacoes)) {
 				console.error('Erro: Dispositivos inválidos ou não é um array', dispositivos);
 				alertCustom.error('Erro ao abrir modal: dispositivos inválidos');
 				return;
@@ -1718,7 +1756,11 @@ export default {
 
 			// Recebe os dispositivos da autorização selecionada e filtra aqueles elegíveis para revogação
 			// (apenas os autorizados)
-			autorizacoesParaRevogar.value = dispositivos.filter(disp => disp && typeof disp === 'object' && disp.status === 'autorizado');
+			autorizacoesParaRevogar.value = dispositivos.autorizacoes.filter(
+				disp => disp && typeof disp === 'object' && disp.status === 'autorizado'
+			);
+
+			selectedUserForDevices.value = dispositivos;
 
 			// Abre o modal
 			showRevokeAllModal.value = true;
